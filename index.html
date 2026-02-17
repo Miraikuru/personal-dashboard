@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kimi Claw - 个人工作台</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="app">
+        <!-- 侧边栏 -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <div class="logo">
+                    <span class="logo-icon">🐾</span>
+                    <span class="logo-text">Kimi Claw</span>
+                </div>
+                <p class="tagline">个人工作台</p>
+            </div>
+            
+            <nav class="nav">
+                <a href="#home" class="nav-item active" data-page="home">
+                    <span class="nav-icon">🏠</span>
+                    <span class="nav-text">首页</span>
+                </a>
+                <a href="#daily-news" class="nav-item" data-page="daily-news">
+                    <span class="nav-icon">📊</span>
+                    <span class="nav-text">每日简报</span>
+                    <span class="badge" id="news-count">0</span>
+                </a>
+                <a href="#tools" class="nav-item" data-page="tools">
+                    <span class="nav-icon">🛠️</span>
+                    <span class="nav-text">工具箱</span>
+                </a>
+                <a href="#archives" class="nav-item" data-page="archives">
+                    <span class="nav-icon">📁</span>
+                    <span class="nav-text">资料库</span>
+                </a>
+            </nav>
+            
+            <div class="sidebar-footer">
+                <div class="time-widget">
+                    <div class="time" id="current-time">--:--</div>
+                    <div class="date" id="current-date">----/--/--</div>
+                </div>
+            </div>
+        </aside>
+        
+        <!-- 主内容区 -->
+        <main class="main">
+            <!-- 顶部栏 -->
+            <header class="header">
+                <button class="menu-toggle" id="menu-toggle">☰</button>
+                <h1 class="page-title" id="page-title">首页</h1>
+                <div class="header-actions">
+                    <a href="https://github.com/Miraikuru/KimiClawPrj1StockData" target="_blank" class="btn btn-icon" title="GitHub">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/></svg>
+                    </a>
+                </div>
+            </header>
+            
+            <!-- 页面内容 -->
+            <div class="content" id="content">
+                <!-- 首页 -->
+                <div class="page active" id="page-home">
+                    <div class="hero">
+                        <div class="hero-content">
+                            <h2 class="hero-title">欢迎来到 Kimi Claw 工作台</h2>
+                            <p class="hero-desc">整合每日简报、数据分析工具和个人资料库的统一平台</p>
+                        </div>
+                        <div class="hero-stats">
+                            <div class="stat-card">
+                                <div class="stat-value" id="total-news">0</div>
+                                <div class="stat-label">历史简报</div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-value" id="total-tools">3</div>
+                                <div class="stat-label">可用工具</div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-value" id="total-archives">2</div>
+                                <div class="stat-label">资料档案</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="quick-access">
+                        <h3 class="section-title">快速访问</h3>
+                        <div class="card-grid">
+                            <a href="#daily-news" class="card card-featured" data-page="daily-news">
+                                <div class="card-icon">📊</div>
+                                <div class="card-content">
+                                    <h4>今日简报</h4>
+                                    <p>查看最新的每日财经新闻简报</p>
+                                </div>
+                                <div class="card-arrow">→</div>
+                            </a>
+                            <a href="https://github.com/Miraikuru/KimiClawPrj1StockData" target="_blank" class="card">
+                                <div class="card-icon">📈</div>
+                                <div class="card-content">
+                                    <h4>A股数据分析</h4>
+                                    <p>访问完整的历史交易数据</p>
+                                </div>
+                                <div class="card-arrow">↗</div>
+                            </a>
+                            <div class="card" onclick="showToast('功能开发中')">
+                                <div class="card-icon">🤖</div>
+                                <div class="card-content">
+                                    <h4>OpenClaw 控制台</h4>
+                                    <p>远程管理你的AI助手</p>
+                                </div>
+                                <div class="card-arrow">→</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="recent-updates">
+                        <h3 class="section-title">最近更新</h3>
+                        <div class="update-list" id="recent-news-list">
+                            <!-- 动态加载 -->
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 每日简报页 -->
+                <div class="page" id="page-daily-news">
+                    <div class="page-header">
+                        <h2>每日简报</h2>
+                        <p>每日自动生成的综合新闻简报</p>
+                    </div>
+                    <div class="news-browser" id="news-browser">
+                        <!-- 动态加载简报列表 -->
+                    </div>
+                </div>
+                
+                <!-- 工具箱页 -->
+                <div class="page" id="page-tools">
+                    <div class="page-header">
+                        <h2>工具箱</h2>
+                        <p>常用工具和脚本</p>
+                    </div>
+                    <div class="tools-grid">
+                        <div class="tool-card">
+                            <div class="tool-header">
+                                <span class="tool-icon">📈</span>
+                                <h3>A股数据获取</h3>
+                            </div>
+                            <p class="tool-desc">使用AKShare获取A股历史交易数据并生成分析报告</p>
+                            <div class="tool-actions">
+                                <a href="../fetch_a_stock_data.py" download class="btn btn-primary">下载脚本</a>
+                                <a href="../a_stock_data/分析报告.txt" target="_blank" class="btn btn-secondary">查看报告</a>
+                            </div>
+                        </div>
+                        <div class="tool-card">
+                            <div class="tool-header">
+                                <span class="tool-icon">📧</span>
+                                <h3>邮件发送工具</h3>
+                            </div>
+                            <p class="tool-desc">Python邮件发送脚本，支持附件</p>
+                            <div class="tool-actions">
+                                <a href="../send_email.py" download class="btn btn-primary">下载脚本</a>
+                            </div>
+                        </div>
+                        <div class="tool-card">
+                            <div class="tool-header">
+                                <span class="tool-icon">🎮</span>
+                                <h3>CK3 Mod</h3>
+                            </div>
+                            <p class="tool-desc">十字军之王3 Nyaron种族Mod</p>
+                            <div class="tool-actions">
+                                <a href="../ck3_nyaron_mod/" class="btn btn-secondary">浏览文件</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 资料库页 -->
+                <div class="page" id="page-archives">
+                    <div class="page-header">
+                        <h2>资料库</h2>
+                        <p>存档文件和数据集</p>
+                    </div>
+                    <div class="archive-list">
+                        <div class="archive-item">
+                            <div class="archive-icon">📊</div>
+                            <div class="archive-info">
+                                <h4>A股年度数据汇总.xlsx</h4>
+                                <p>近一年A股所有交易数据汇总</p>
+                                <span class="archive-meta">2.5 MB · 2026-02-15</span>
+                            </div>
+                            <a href="../a_stock_data/A股年度数据汇总.xlsx" download class="btn btn-primary">下载</a>
+                        </div>
+                        <div class="archive-item">
+                            <div class="archive-icon">📦</div>
+                            <div class="archive-info">
+                                <h4>a_stock_data.tar.gz</h4>
+                                <p>A股数据完整存档</p>
+                                <span class="archive-meta">2.5 MB · 2026-02-15</span>
+                            </div>
+                            <a href="../a_stock_data/a_stock_data.tar.gz" download class="btn btn-primary">下载</a>
+                        </div>
+                        <div class="archive-item">
+                            <div class="archive-icon">📰</div>
+                            <div class="archive-info">
+                                <h4>新闻简报存档</h4>
+                                <p>所有历史每日简报HTML文件</p>
+                                <span class="archive-meta" id="news-archive-count">加载中...</span>
+                            </div>
+                            <a href="archives/" class="btn btn-secondary">浏览</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+    
+    <!-- 简报预览模态框 -->
+    <div class="modal" id="news-modal">
+        <div class="modal-overlay" onclick="closeModal()"></div>
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="modal-title">简报预览</h3>
+                <button class="modal-close" onclick="closeModal()">×</button>
+            </div>
+            <div class="modal-body">
+                <iframe id="news-iframe" src="" frameborder="0"></iframe>
+            </div>
+            <div class="modal-footer">
+                <a id="modal-github" href="" target="_blank" class="btn btn-primary">在GitHub查看</a>
+                <button class="btn btn-secondary" onclick="closeModal()">关闭</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Toast提示 -->
+    <div class="toast" id="toast"></div>
+    
+    <script src="js/app.js"></script>
+</body>
+</html>
