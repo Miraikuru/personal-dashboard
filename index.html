@@ -282,22 +282,22 @@
             `;
             
             try {
-                // 尝试从GitHub Pages加载
-                const response = await fetch(`https://miraikuru.github.io/KimiClawPrj1StockData/${date}.html`);
+                // 优先从同目录加载（GitHub Pages部署的副本）
+                const response = await fetch(`./${date}.html`);
                 
                 if (response.ok) {
                     const html = await response.text();
                     content.innerHTML = html;
                 } else {
-                    throw new Error('GitHub Pages 加载失败');
+                    throw new Error('本地加载失败');
                 }
             } catch (error) {
-                // 如果GitHub Pages失败，显示错误和GitHub链接
+                // 如果本地失败，显示GitHub链接
                 content.innerHTML = `
                     <div class="error">
                         <div class="error-icon">📄</div>
                         <h2>简报加载中</h2>
-                        <p>GitHub Pages 正在部署，请稍后刷新页面</p>
+                        <p>正在部署到GitHub Pages，请稍后刷新页面</p>
                         <a href="https://github.com/Miraikuru/KimiClawPrj1StockData/blob/main/${date}.html" 
                            target="_blank" class="btn btn-primary" style="margin-top: 16px;">
                             在GitHub查看

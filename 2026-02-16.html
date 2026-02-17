@@ -1,0 +1,463 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>2026年2月16日 财经新闻早报</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        .header h1 {
+            font-size: 24px;
+            margin-bottom: 10px;
+        }
+        .header .time {
+            opacity: 0.9;
+            font-size: 14px;
+        }
+        .content {
+            padding: 20px;
+        }
+        .category {
+            margin-bottom: 16px;
+            border-radius: 12px;
+            overflow: hidden;
+            background: #f8f9fa;
+        }
+        .category-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 16px 20px;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-weight: 600;
+            font-size: 16px;
+        }
+        .category-header:hover {
+            opacity: 0.95;
+        }
+        .category-header .count {
+            background: rgba(255,255,255,0.2);
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+        }
+        .category-content {
+            display: none;
+            padding: 16px;
+        }
+        .category.active .category-content {
+            display: block;
+        }
+        .news-item {
+            background: white;
+            border-radius: 10px;
+            margin-bottom: 12px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+        }
+        .news-title {
+            padding: 14px 16px;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid transparent;
+            transition: all 0.2s;
+        }
+        .news-title:hover {
+            background: #f0f4ff;
+        }
+        .news-title.active {
+            border-bottom-color: #e8ecf1;
+            background: #f0f4ff;
+        }
+        .news-title-text {
+            font-weight: 500;
+            color: #333;
+            font-size: 15px;
+        }
+        .news-title .arrow {
+            transition: transform 0.3s;
+            color: #667eea;
+        }
+        .news-title.active .arrow {
+            transform: rotate(180deg);
+        }
+        .news-content {
+            display: none;
+            padding: 16px;
+            color: #555;
+            line-height: 1.7;
+            font-size: 14px;
+        }
+        .news-content.active {
+            display: block;
+        }
+        .news-content p {
+            margin-bottom: 12px;
+        }
+        .news-content ul {
+            margin-left: 20px;
+            margin-bottom: 12px;
+        }
+        .news-content li {
+            margin-bottom: 6px;
+        }
+        .highlight {
+            background: linear-gradient(120deg, #ffeaa7 0%, #ffeaa7 100%);
+            background-repeat: no-repeat;
+            background-size: 100% 40%;
+            background-position: 0 88%;
+            padding: 0 4px;
+            font-weight: 600;
+        }
+        .tag {
+            display: inline-block;
+            background: #667eea;
+            color: white;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            margin-right: 6px;
+        }
+        .footer {
+            text-align: center;
+            padding: 20px;
+            color: #999;
+            font-size: 12px;
+            background: #f8f9fa;
+        }
+        @media (max-width: 600px) {
+            body {
+                padding: 10px;
+            }
+            .header {
+                padding: 20px;
+            }
+            .header h1 {
+                font-size: 20px;
+            }
+            .content {
+                padding: 12px;
+            }
+            .category-header {
+                padding: 14px 16px;
+                font-size: 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📊 财经新闻早报</h1>
+            <div class="time">2026年2月16日 星期一</div>
+        </div>
+        
+        <div class="content">
+            <!-- AI人工智能 -->
+            <div class="category">
+                <div class="category-header" onclick="toggleCategory(this)">
+                    <span>🤖 AI人工智能</span>
+                    <span class="count">3条</span>
+                </div>
+                <div class="category-content">
+                    <div class="news-item">
+                        <div class="news-title" onclick="toggleNews(this)">
+                            <span class="news-title-text">OpenAI聘请OpenClaw创始人</span>
+                            <span class="arrow">▼</span>
+                        </div>
+                        <div class="news-content">
+                            <p>OpenAI正式聘请OpenClaw创始人<span class="highlight">Peter Steinberger</span>，Sam Altman在X平台正式宣布这一消息。</p>
+                            <p><strong>关键影响：</strong></p>
+                            <ul>
+                                <li>OpenClaw将成为一个<span class="highlight">开放独立的基金会</span></li>
+                                <li>标志AI Agent领域人才竞争进入白热化阶段</li>
+                                <li>OpenAI在AI Agent领域的重要战略布局</li>
+                            </ul>
+                        </div>
+                    </div>
+                    
+                    <div class="news-item">
+                        <div class="news-title" onclick="toggleNews(this)">
+                            <span class="news-title-text">GPT-5.3-Codex-Spark正式发布</span>
+                            <span class="arrow">▼</span>
+                        </div>
+                        <div class="news-content">
+                            <p>OpenAI首款<span class="highlight">实时编程模型</span>发布，面向ChatGPT Pro用户开放研究预览。</p>
+                            <p><strong>产品亮点：</strong></p>
+                            <ul>
+                                <li><span class="highlight">15倍生成提速</span>，响应速度大幅提升</li>
+                                <li><span class="highlight">128k上下文窗口</span>，支持更大代码库</li>
+                                <li>GitHub Copilot面临更强竞争挑战</li>
+                            </ul>
+                        </div>
+                    </div>
+                    
+                    <div class="news-item">
+                        <div class="news-title" onclick="toggleNews(this)">
+                            <span class="news-title-text">OpenAI将发布GPT-4.5模型</span>
+                            <span class="arrow">▼</span>
+                        </div>
+                        <div class="news-content">
+                            <p>CEO奥尔特曼宣布将在<span class="highlight">几周内发布GPT-4.5</span>，该模型已开发20多个月，被公司内部寄予厚望。</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 软件与互联网 -->
+            <div class="category">
+                <div class="category-header" onclick="toggleCategory(this)">
+                    <span>💻 软件与互联网</span>
+                    <span class="count">2条</span>
+                </div>
+                <div class="category-content">
+                    <div class="news-item">
+                        <div class="news-title" onclick="toggleNews(this)">
+                            <span class="news-title-text">软件行业反弹窗口开启</span>
+                            <span class="arrow">▼</span>
+                        </div>
+                        <div class="news-content">
+                            <p>全球<span class="highlight">"再通胀"交易</span>与AI国产应用升级催化，国产算力链与软件板块迎来反弹。</p>
+                            <p>2026年政策对<span class="highlight">"未来产业"</span>支持力度将超预期，软件行业迎来发展新机遇。</p>
+                        </div>
+                    </div>
+                    
+                    <div class="news-item">
+                        <div class="news-title" onclick="toggleNews(this)">
+                            <span class="news-title-text">谷歌2026年资本支出翻倍</span>
+                            <span class="arrow">▼</span>
+                        </div>
+                        <div class="news-content">
+                            <p>谷歌Q4财报亮眼：</p>
+                            <ul>
+                                <li>营收<span class="highlight">1138亿美元</span>，净利<span class="highlight">345亿美元</span>，均超预期</li>
+                                <li>2026年资本支出预计<span class="highlight">1750-1850亿美元</span></li>
+                                <li>几乎是2025年的两倍</li>
+                            </ul>
+                            <p>DeepMind CEO表示：10-15年内AI将开启科学黄金时代。</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 硬件与半导体 -->
+            <div class="category">
+                <div class="category-header" onclick="toggleCategory(this)">
+                    <span>🔧 硬件与半导体</span>
+                    <span class="count">2条</span>
+                </div>
+                <div class="category-content">
+                    <div class="news-item">
+                        <div class="news-title" onclick="toggleNews(this)">
+                            <span class="news-title-text">港股半导体板块爆发</span>
+                            <span class="arrow">▼</span>
+                        </div>
+                        <div class="news-content">
+                            <p>2月16日港股半导体板块<span class="highlight">直线拉升</span>，有色金属同步活跃。</p>
+                            <p><strong>重要事件：</strong>MSCI中国指数调整，<span class="highlight">7家广东硬科技企业</span>入选，国际指数巨头对新势力企业的认可。</p>
+                        </div>
+                    </div>
+                    
+                    <div class="news-item">
+                        <div class="news-title" onclick="toggleNews(this)">
+                            <span class="news-title-text">芯片行业利润率暴涨50%</span>
+                            <span class="arrow">▼</span>
+                        </div>
+                        <div class="news-content">
+                            <p>高盛最新测算数据：</p>
+                            <ul>
+                                <li><strong>三星电子</strong> NAND业务营业利润率：<span class="highlight">25% → 37%</span></li>
+                                <li><strong>SK海力士</strong>：<span class="highlight">30% → 42%</span></li>
+                                <li><strong>铠侠</strong>：营业利润率同样大幅提升</li>
+                            </ul>
+                            <p>涨幅高达<span class="highlight">50%</span>，芯片行业迎来周期性复苏。</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 航天与太空 -->
+            <div class="category">
+                <div class="category-header" onclick="toggleCategory(this)">
+                    <span>🚀 航天与太空</span>
+                    <span class="count">3条</span>
+                </div>
+                <div class="category-content">
+                    <div class="news-item">
+                        <div class="news-title" onclick="toggleNews(this)">
+                            <span class="news-title-text">SpaceX发射24颗星链卫星</span>
+                            <span class="arrow">▼</span>
+                        </div>
+                        <div class="news-content">
+                            <p><strong>发射详情：</strong></p>
+                            <ul>
+                                <li>时间：2026年2月15日</li>
+                                <li>地点：加州范登堡太空军基地</li>
+                                <li>载荷：<span class="highlight">24颗星链V2 Mini卫星</span></li>
+                                <li>火箭：猎鹰9号一级助推器成功回收</li>
+                            </ul>
+                            <p><strong>战略意义：</strong>马斯克计划发射<span class="highlight">100万颗卫星</span>，构建太空互联网与AI算力闭环。</p>
+                        </div>
+                    </div>
+                    
+                    <div class="news-item">
+                        <div class="news-title" onclick="toggleNews(this)">
+                            <span class="news-title-text">美中登月竞赛白热化</span>
+                            <span class="arrow">▼</span>
+                        </div>
+                        <div class="news-content">
+                            <p><strong>竞争态势：</strong></p>
+                            <ul>
+                                <li>马斯克SpaceX与贝佐斯蓝色起源加紧登月之旅</li>
+                                <li>两位美国亿万富翁竞相展开登月项目</li>
+                                <li>美中太空之争推动商业航天快速发展</li>
+                            </ul>
+                            <p><strong>最新进展：</strong>美载人"龙"飞船与国际空间站完成对接，4名宇航员将开展约<span class="highlight">8个月的科研任务</span>，为未来月球和火星探索做准备。</p>
+                        </div>
+                    </div>
+                    
+                    <div class="news-item">
+                        <div class="news-title" onclick="toggleNews(this)">
+                            <span class="news-title-text">中国航天商业发射新突破</span>
+                            <span class="arrow">▼</span>
+                        </div>
+                        <div class="news-content">
+                            <p>中国航天科技集团抓总研制新型运载火箭，成功将巴基斯坦PRSC-EO2卫星等<span class="highlight">7颗卫星</span>精准送入预定轨道。</p>
+                            <p>中国长征火箭有限公司负责商业运营，标志中国商业航天国际化步伐加快。</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 贵金属与大宗商品 -->
+            <div class="category">
+                <div class="category-header" onclick="toggleCategory(this)">
+                    <span>🥇 贵金属与大宗商品</span>
+                    <span class="count">2条</span>
+                </div>
+                <div class="category-content">
+                    <div class="news-item">
+                        <div class="news-title" onclick="toggleNews(this)">
+                            <span class="news-title-text">黄金、白银全线下跌</span>
+                            <span class="arrow">▼</span>
+                        </div>
+                        <div class="news-content">
+                            <p><strong>2月16日开盘行情：</strong></p>
+                            <ul>
+                                <li>现货黄金：<span class="highlight">跌0.52%</span></li>
+                                <li>现货白银：<span class="highlight">跌超1.7%</span>，一度跌逾3%</li>
+                            </ul>
+                            <p><strong>影响因素：</strong></p>
+                            <ul>
+                                <li>美国1月通胀数据低于预期</li>
+                                <li>重新点燃市场对美联储今年降息的希望</li>
+                                <li>降息预期盖过避险需求，金价测试5000关口支撑</li>
+                            </ul>
+                        </div>
+                    </div>
+                    
+                    <div class="news-item">
+                        <div class="news-title" onclick="toggleNews(this)">
+                            <span class="news-title-text">有色金属板块走强</span>
+                            <span class="arrow">▼</span>
+                        </div>
+                        <div class="news-content">
+                            <p><strong>港股有色金属表现：</strong></p>
+                            <ul>
+                                <li><strong>灵宝黄金</strong>、<strong>洛阳钼业</strong>涨逾<span class="highlight">7%</span></li>
+                                <li><strong>江西铜业</strong>、<strong>中国有色矿业</strong>、<strong>山东黄金</strong>、<strong>中国宏桥</strong>涨超<span class="highlight">4%</span></li>
+                                <li><strong>中国铝业</strong>、<strong>紫金矿业</strong>涨超<span class="highlight">3%</span></li>
+                            </ul>
+                            <p><strong>驱动逻辑：</strong>全球"再通胀"交易预期升温，资源品板块受益。</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 国内外时事 -->
+            <div class="category">
+                <div class="category-header" onclick="toggleCategory(this)">
+                    <span>🌍 国内外时事</span>
+                    <span class="count">2条</span>
+                </div>
+                <div class="category-content">
+                    <div class="news-item">
+                        <div class="news-title" onclick="toggleNews(this)">
+                            <span class="news-title-text">国内：未来产业政策支持超预期</span>
+                            <span class="arrow">▼</span>
+                        </div>
+                        <div class="news-content">
+                            <p>2026年政策对<span class="highlight">"未来产业"</span>支持力度将超预期：</p>
+                            <ul>
+                                <li>国产算力链持续受益</li>
+                                <li>软件行业迎来发展新机遇</li>
+                                <li>AI国产应用升级加速</li>
+                            </ul>
+                        </div>
+                    </div>
+                    
+                    <div class="news-item">
+                        <div class="news-title" onclick="toggleNews(this)">
+                            <span class="news-title-text">国际：美股三大指数收跌</span>
+                            <span class="arrow">▼</span>
+                        </div>
+                        <div class="news-content">
+                            <p><strong>最新行情：</strong></p>
+                            <ul>
+                                <li>道指、纳指、标普500<span class="highlight">集体收跌</span></li>
+                                <li>科技股波动加剧</li>
+                                <li>市场关注美联储货币政策走向</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="footer">
+            💡 点击分类标题展开该领域新闻，点击新闻标题查看详情
+        </div>
+    </div>
+    
+    <script>
+        function toggleCategory(header) {
+            const category = header.parentElement;
+            category.classList.toggle('active');
+        }
+        
+        function toggleNews(title) {
+            const content = title.nextElementSibling;
+            title.classList.toggle('active');
+            content.classList.toggle('active');
+        }
+    </script>
+</body>
+</html>
