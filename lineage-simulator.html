@@ -1,0 +1,935 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>世系模拟器 - Family Lineage Simulator</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            min-height: 100vh;
+            color: #e0e0e0;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        /* 头部 */
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 16px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .header h1 {
+            font-size: 28px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 10px;
+        }
+        
+        .header p {
+            color: #888;
+        }
+        
+        /* 控制面板 */
+        .control-panel {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .control-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        
+        .control-group label {
+            font-size: 13px;
+            color: #888;
+        }
+        
+        .control-group input,
+        .control-group select {
+            padding: 10px 12px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 8px;
+            color: #fff;
+            font-size: 14px;
+        }
+        
+        .control-group input:focus,
+        .control-group select:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 20px rgba(102, 126, 234, 0.4);
+        }
+        
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.1);
+            color: #fff;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.15);
+        }
+        
+        /* 统计面板 */
+        .stats-panel {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .stat-card {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 16px;
+            border-radius: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            text-align: center;
+        }
+        
+        .stat-value {
+            font-size: 28px;
+            font-weight: 700;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        
+        .stat-label {
+            font-size: 12px;
+            color: #888;
+            margin-top: 4px;
+        }
+        
+        /* 主内容区 */
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr 350px;
+            gap: 20px;
+        }
+        
+        @media (max-width: 1024px) {
+            .main-content {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        /* 家系树可视化 */
+        .tree-container {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            overflow: hidden;
+            min-height: 600px;
+        }
+        
+        .tree-header {
+            padding: 16px 20px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .tree-header h3 {
+            font-size: 16px;
+        }
+        
+        .tree-controls {
+            display: flex;
+            gap: 8px;
+        }
+        
+        .tree-controls button {
+            padding: 6px 12px;
+            font-size: 12px;
+        }
+        
+        #family-tree {
+            width: 100%;
+            height: 600px;
+            overflow: auto;
+            position: relative;
+        }
+        
+        /* 侧边栏 */
+        .sidebar {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        
+        .panel {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            overflow: hidden;
+        }
+        
+        .panel-header {
+            padding: 16px 20px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            font-weight: 600;
+        }
+        
+        .panel-content {
+            padding: 16px;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        
+        /* 成员列表 */
+        .member-list {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        
+        .member-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .member-item:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+        
+        .member-avatar {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+        }
+        
+        .member-info {
+            flex: 1;
+        }
+        
+        .member-name {
+            font-weight: 500;
+            font-size: 14px;
+        }
+        
+        .member-meta {
+            font-size: 12px;
+            color: #888;
+        }
+        
+        .member-descendants {
+            font-size: 12px;
+            color: #667eea;
+            font-weight: 600;
+        }
+        
+        /* 详情面板 */
+        .detail-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+        
+        .detail-row:last-child {
+            border-bottom: none;
+        }
+        
+        .detail-label {
+            color: #888;
+            font-size: 13px;
+        }
+        
+        .detail-value {
+            font-weight: 500;
+            font-size: 13px;
+        }
+        
+        /* 树形图样式 */
+        .tree-svg {
+            width: 100%;
+            height: 100%;
+        }
+        
+        .tree-node {
+            cursor: pointer;
+        }
+        
+        .tree-node circle {
+            fill: #667eea;
+            stroke: #fff;
+            stroke-width: 2;
+        }
+        
+        .tree-node text {
+            fill: #fff;
+            font-size: 12px;
+            text-anchor: middle;
+        }
+        
+        .tree-link {
+            fill: none;
+            stroke: rgba(255, 255, 255, 0.2);
+            stroke-width: 2;
+        }
+        
+        /* 加载动画 */
+        .loading {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 400px;
+            color: #888;
+        }
+        
+        .loading-spinner {
+            width: 40px;
+            height: 40px;
+            border: 3px solid rgba(102, 126, 234, 0.3);
+            border-top-color: #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-bottom: 16px;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        /* 滚动条 */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        
+        ::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.05);
+        }
+        
+        ::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 4px;
+        }
+        
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- 头部 -->
+        <div class="header">
+            <h1>🌳 世系模拟器</h1>
+            <p>模拟家庭繁衍，可视化家系树，分析家族数据</p>
+        </div>
+        
+        <!-- 控制面板 -->
+        <div class="control-panel">
+            <div class="control-group">
+                <label>家族姓氏</label>
+                <input type="text" id="surname" value="李" placeholder="输入姓氏">
+            </div>
+            <div class="control-group">
+                <label>模拟代数</label>
+                <input type="number" id="generations" value="10" min="3" max="50">
+            </div>
+            <div class="control-group">
+                <label>平均子女数</label>
+                <input type="number" id="avg-children" value="2.5" min="0.5" max="10" step="0.5">
+            </div>
+            <div class="control-group">
+                <label>最大结婚年龄</label>
+                <input type="number" id="max-marriage-age" value="45" min="18" max="80">
+            </div>
+            <div class="control-group" style="display: flex; align-items: flex-end;">
+                <button class="btn btn-primary" onclick="startSimulation()">开始模拟</button>
+            </div>
+            <div class="control-group" style="display: flex; align-items: flex-end;">
+                <button class="btn btn-secondary" onclick="resetData()">重置数据</button>
+            </div>
+        </div>
+        
+        <!-- 统计面板 -->
+        <div class="stats-panel" id="stats-panel">
+            <div class="stat-card">
+                <div class="stat-value" id="stat-total">0</div>
+                <div class="stat-label">总人口</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="stat-generations">0</div>
+                <div class="stat-label">总代数</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="stat-male">0</div>
+                <div class="stat-label">男性</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="stat-female">0</div>
+                <div class="stat-label">女性</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="stat-max-descendants">0</div>
+                <div class="stat-label">最多后代数</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="stat-avg-lifespan">0</div>
+                <div class="stat-label">平均寿命</div>
+            </div>
+        </div>
+        
+        <!-- 主内容区 -->
+        <div class="main-content">
+            <!-- 家系树可视化 -->
+            <div class="tree-container">
+                <div class="tree-header">
+                    <h3>家系树</h3>
+                    <div class="tree-controls">
+                        <button class="btn btn-secondary" onclick="zoomIn()">放大</button>
+                        <button class="btn btn-secondary" onclick="zoomOut()">缩小</button>
+                        <button class="btn btn-secondary" onclick="resetView()">重置视图</button>
+                    </div>
+                </div>
+                <div id="family-tree">
+                    <div class="loading">
+                        <div class="loading-spinner"></div>
+                        <p>点击"开始模拟"生成家系数据</p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 侧边栏 -->
+            <div class="sidebar">
+                <!-- 最多后代排行 -->
+                <div class="panel">
+                    <div class="panel-header">🏆 后代最多排行</div>
+                    <div class="panel-content">
+                        <div class="member-list" id="top-descendants">
+                            <p style="color: #888; text-align: center;">暂无数据</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 选中成员详情 -->
+                <div class="panel">
+                    <div class="panel-header">👤 成员详情</div>
+                    <div class="panel-content" id="member-detail">
+                        <p style="color: #888; text-align: center;">点击家系树中的成员查看详情</p>
+                    </div>
+                </div>
+                
+                <!-- 家族统计 -->
+                <div class="panel">
+                    <div class="panel-header">📊 家族统计</div>
+                    <div class="panel-content" id="family-stats">
+                        <p style="color: #888; text-align: center;">暂无数据</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 全局数据
+        let familyData = null;
+        let selectedMember = null;
+        let treeScale = 1;
+        
+        // 姓名生成器
+        const maleNames = ['伟', '强', '军', '杰', '勇', '磊', '明', '涛', '鹏', '超', '俊', '峰', '建', '华', '文', '辉', '宇', '浩', '凯', '龙'];
+        const femaleNames = ['芳', '娜', '敏', '静', '丽', '婷', '雪', '颖', '慧', '娟', '艳', '玲', '燕', '梅', '霞', '秀', '英', '华', '兰', '洁'];
+        
+        function generateName(gender, surname) {
+            const names = gender === 'male' ? maleNames : femaleNames;
+            return surname + names[Math.floor(Math.random() * names.length)];
+        }
+        
+        // 生成随机数（正态分布）
+        function randomNormal(mean, std) {
+            let u = 0, v = 0;
+            while(u === 0) u = Math.random();
+            while(v === 0) v = Math.random();
+            return mean + std * Math.sqrt(-2.0 * Math.log(u)) * Math.cos(2.0 * Math.PI * v);
+        }
+        
+        // 生成随机整数
+        function randomInt(min, max) {
+            return Math.floor(Math.random() * (max - min + 1)) + min;
+        }
+        
+        // 开始模拟
+        function startSimulation() {
+            const surname = document.getElementById('surname').value || '李';
+            const generations = parseInt(document.getElementById('generations').value) || 10;
+            const avgChildren = parseFloat(document.getElementById('avg-children').value) || 2.5;
+            const maxMarriageAge = parseInt(document.getElementById('max-marriage-age').value) || 45;
+            
+            // 显示加载
+            document.getElementById('family-tree').innerHTML = `
+                <div class="loading">
+                    <div class="loading-spinner"></div>
+                    <p>正在模拟 ${generations} 代家系...</p>
+                </div>
+            `;
+            
+            // 异步执行模拟
+            setTimeout(() => {
+                familyData = simulateFamily(surname, generations, avgChildren, maxMarriageAge);
+                updateDisplay();
+            }, 100);
+        }
+        
+        // 模拟家族繁衍
+        function simulateFamily(surname, maxGenerations, avgChildren, maxMarriageAge) {
+            const people = [];
+            let idCounter = 1;
+            
+            // 创建始祖（第1代）
+            const founder = {
+                id: idCounter++,
+                name: generateName('male', surname),
+                gender: 'male',
+                generation: 1,
+                birthYear: 1900,
+                deathYear: 1975,
+                age: 75,
+                parentId: null,
+                spouseId: null,
+                children: [],
+                descendants: 0
+            };
+            
+            const founderSpouse = {
+                id: idCounter++,
+                name: generateName('female', surname),
+                gender: 'female',
+                generation: 1,
+                birthYear: 1902,
+                deathYear: 1980,
+                age: 78,
+                parentId: null,
+                spouseId: founder.id,
+                children: [],
+                descendants: 0
+            };
+            
+            founder.spouseId = founderSpouse.id;
+            people.push(founder, founderSpouse);
+            
+            // 按代模拟
+            for (let gen = 1; gen < maxGenerations; gen++) {
+                const currentGenPeople = people.filter(p => p.generation === gen && p.gender === 'male');
+                
+                for (const father of currentGenPeople) {
+                    // 决定是否生育
+                    if (Math.random() > 0.1) { // 90%概率有孩子
+                        const numChildren = Math.max(0, Math.round(randomNormal(avgChildren, 1)));
+                        
+                        for (let i = 0; i < numChildren; i++) {
+                            const gender = Math.random() > 0.5 ? 'male' : 'female';
+                            const birthYear = father.birthYear + randomInt(20, maxMarriageAge);
+                            const lifespan = randomInt(50, 95);
+                            
+                            const child = {
+                                id: idCounter++,
+                                name: generateName(gender, surname),
+                                gender: gender,
+                                generation: gen + 1,
+                                birthYear: birthYear,
+                                deathYear: birthYear + lifespan,
+                                age: lifespan,
+                                parentId: father.id,
+                                spouseId: null,
+                                children: [],
+                                descendants: 0
+                            };
+                            
+                            father.children.push(child.id);
+                            founderSpouse.children.push(child.id);
+                            people.push(child);
+                            
+                            // 为男性找配偶
+                            if (gender === 'male' && gen < maxGenerations - 1) {
+                                const spouse = {
+                                    id: idCounter++,
+                                    name: generateName('female', surname),
+                                    gender: 'female',
+                                    generation: gen + 1,
+                                    birthYear: child.birthYear + randomInt(-3, 3),
+                                    deathYear: child.deathYear + randomInt(-5, 5),
+                                    age: 0,
+                                    parentId: null,
+                                    spouseId: child.id,
+                                    children: [],
+                                    descendants: 0
+                                };
+                                spouse.age = spouse.deathYear - spouse.birthYear;
+                                child.spouseId = spouse.id;
+                                people.push(spouse);
+                            }
+                        }
+                    }
+                }
+            }
+            
+            // 计算每个成员的后代数量
+            calculateDescendants(people);
+            
+            return {
+                people: people,
+                founder: founder,
+                maxGeneration: maxGenerations,
+                stats: calculateStats(people)
+            };
+        }
+        
+        // 计算后代数量
+        function calculateDescendants(people) {
+            // 从最后一代往前计算
+            const sortedPeople = [...people].sort((a, b) => b.generation - a.generation);
+            
+            for (const person of sortedPeople) {
+                let count = 0;
+                for (const childId of person.children) {
+                    const child = people.find(p => p.id === childId);
+                    if (child) {
+                        count += 1 + child.descendants;
+                    }
+                }
+                person.descendants = count;
+            }
+        }
+        
+        // 计算统计数据
+        function calculateStats(people) {
+            const total = people.length;
+            const males = people.filter(p => p.gender === 'male').length;
+            const females = people.filter(p => p.gender === 'female').length;
+            const maxGen = Math.max(...people.map(p => p.generation));
+            const maxDescendants = Math.max(...people.map(p => p.descendants));
+            const avgLifespan = Math.round(people.reduce((sum, p) => sum + p.age, 0) / total);
+            
+            return {
+                total,
+                males,
+                females,
+                maxGen,
+                maxDescendants,
+                avgLifespan
+            };
+        }
+        
+        // 更新显示
+        function updateDisplay() {
+            if (!familyData) return;
+            
+            const { people, stats } = familyData;
+            
+            // 更新统计面板
+            document.getElementById('stat-total').textContent = stats.total;
+            document.getElementById('stat-generations').textContent = stats.maxGen;
+            document.getElementById('stat-male').textContent = stats.males;
+            document.getElementById('stat-female').textContent = stats.females;
+            document.getElementById('stat-max-descendants').textContent = stats.maxDescendants;
+            document.getElementById('stat-avg-lifespan').textContent = stats.avgLifespan + '岁';
+            
+            // 绘制家系树
+            drawTree();
+            
+            // 更新最多后代排行
+            updateTopDescendants();
+            
+            // 更新家族统计
+            updateFamilyStats();
+        }
+        
+        // 绘制家系树
+        function drawTree() {
+            const container = document.getElementById('family-tree');
+            const { people, founder } = familyData;
+            
+            // 简化的树形布局
+            const nodeWidth = 120;
+            const nodeHeight = 60;
+            const levelHeight = 100;
+            
+            // 按代分组
+            const generationGroups = {};
+            for (const person of people) {
+                if (!generationGroups[person.generation]) {
+                    generationGroups[person.generation] = [];
+                }
+                generationGroups[person.generation].push(person);
+            }
+            
+            const maxGen = Math.max(...people.map(p => p.generation));
+            const svgWidth = Math.max(800, Object.values(generationGroups).reduce((max, group) => Math.max(max, group.length * nodeWidth), 0));
+            const svgHeight = maxGen * levelHeight + 100;
+            
+            let svg = `
+                <svg class="tree-svg" width="${svgWidth}" height="${svgHeight}" viewBox="0 0 ${svgWidth} ${svgHeight}">
+                    <defs>
+                        <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+                            <polygon points="0 0, 10 3.5, 0 7" fill="rgba(255,255,255,0.3)" />
+                        </marker>
+                    </defs>
+            `;
+            
+            // 计算位置
+            const positions = {};
+            for (let gen = 1; gen <= maxGen; gen++) {
+                const group = generationGroups[gen] || [];
+                const startX = (svgWidth - group.length * nodeWidth) / 2 + nodeWidth / 2;
+                
+                group.forEach((person, index) => {
+                    positions[person.id] = {
+                        x: startX + index * nodeWidth,
+                        y: gen * levelHeight
+                    };
+                });
+            }
+            
+            // 绘制连线
+            for (const person of people) {
+                if (person.children.length > 0) {
+                    const parentPos = positions[person.id];
+                    for (const childId of person.children) {
+                        const childPos = positions[childId];
+                        if (parentPos && childPos) {
+                            svg += `<line class="tree-link" x1="${parentPos.x}" y1="${parentPos.y + 20}" x2="${childPos.x}" y2="${childPos.y - 20}" marker-end="url(#arrowhead)" />`;
+                        }
+                    }
+                }
+            }
+            
+            // 绘制节点
+            for (const person of people) {
+                const pos = positions[person.id];
+                if (pos) {
+                    const color = person.gender === 'male' ? '#667eea' : '#e91e63';
+                    svg += `
+                        <g class="tree-node" onclick="selectMember(${person.id})" transform="translate(${pos.x}, ${pos.y})">
+                            <circle r="20" fill="${color}" stroke="#fff" stroke-width="2" />
+                            <text y="-25" fill="#fff" font-size="11" text-anchor="middle">${person.name}</text>
+                            <text y="35" fill="#888" font-size="10" text-anchor="middle">${person.birthYear}-${person.deathYear}</text>
+                            ${person.descendants > 0 ? `<text y="5" fill="#fff" font-size="10" text-anchor="middle">${person.descendants}</text>` : ''}
+                        </g>
+                    `;
+                }
+            }
+            
+            svg += '</svg>';
+            container.innerHTML = svg;
+        }
+        
+        // 选择成员
+        function selectMember(id) {
+            const person = familyData.people.find(p => p.id === id);
+            if (!person) return;
+            
+            selectedMember = person;
+            
+            const parent = person.parentId ? familyData.people.find(p => p.id === person.parentId) : null;
+            const spouse = person.spouseId ? familyData.people.find(p => p.id === person.spouseId) : null;
+            
+            document.getElementById('member-detail').innerHTML = `
+                <div class="detail-row">
+                    <span class="detail-label">姓名</span>
+                    <span class="detail-value">${person.name}</span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label">性别</span>
+                    <span class="detail-value">${person.gender === 'male' ? '男' : '女'}</span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label">代数</span>
+                    <span class="detail-value">第${person.generation}代</span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label">生卒年</span>
+                    <span class="detail-value">${person.birthYear} - ${person.deathYear}</span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label">寿命</span>
+                    <span class="detail-value">${person.age}岁</span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label">父母</span>
+                    <span class="detail-value">${parent ? parent.name : '始祖'}</span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label">配偶</span>
+                    <span class="detail-value">${spouse ? spouse.name : '无'}</span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label">子女数</span>
+                    <span class="detail-value">${person.children.length}人</span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label">后代总数</span>
+                    <span class="detail-value" style="color: #667eea; font-weight: 600;">${person.descendants}人</span>
+                </div>
+            `;
+        }
+        
+        // 更新最多后代排行
+        function updateTopDescendants() {
+            const { people } = familyData;
+            const sorted = [...people]
+                .filter(p => p.descendants > 0)
+                .sort((a, b) => b.descendants - a.descendants)
+                .slice(0, 10);
+            
+            document.getElementById('top-descendants').innerHTML = sorted.map((person, index) => `
+                <div class="member-item" onclick="selectMember(${person.id})">
+                    <div class="member-avatar">${index + 1}</div>
+                    <div class="member-info">
+                        <div class="member-name">${person.name}</div>
+                        <div class="member-meta">第${person.generation}代 · ${person.age}岁</div>
+                    </div>
+                    <div class="member-descendants">${person.descendants}后代</div>
+                </div>
+            `).join('');
+        }
+        
+        // 更新家族统计
+        function updateFamilyStats() {
+            const { people, stats } = familyData;
+            
+            // 按代统计
+            const genStats = {};
+            for (const person of people) {
+                if (!genStats[person.generation]) {
+                    genStats[person.generation] = { count: 0, males: 0, females: 0 };
+                }
+                genStats[person.generation].count++;
+                if (person.gender === 'male') {
+                    genStats[person.generation].males++;
+                } else {
+                    genStats[person.generation].females++;
+                }
+            }
+            
+            let html = '';
+            for (let gen = 1; gen <= stats.maxGen; gen++) {
+                const stat = genStats[gen] || { count: 0, males: 0, females: 0 };
+                html += `
+                    <div class="detail-row">
+                        <span class="detail-label">第${gen}代</span>
+                        <span class="detail-value">${stat.count}人 (男${stat.males}/女${stat.females})</span>
+                    </div>
+                `;
+            }
+            
+            document.getElementById('family-stats').innerHTML = html;
+        }
+        
+        // 缩放功能
+        function zoomIn() {
+            treeScale = Math.min(treeScale * 1.2, 3);
+            applyZoom();
+        }
+        
+        function zoomOut() {
+            treeScale = Math.max(treeScale / 1.2, 0.3);
+            applyZoom();
+        }
+        
+        function resetView() {
+            treeScale = 1;
+            applyZoom();
+        }
+        
+        function applyZoom() {
+            const svg = document.querySelector('.tree-svg');
+            if (svg) {
+                svg.style.transform = `scale(${treeScale})`;
+                svg.style.transformOrigin = 'top center';
+            }
+        }
+        
+        // 重置数据
+        function resetData() {
+            familyData = null;
+            selectedMember = null;
+            treeScale = 1;
+            
+            document.getElementById('family-tree').innerHTML = `
+                <div class="loading">
+                    <div class="loading-spinner"></div>
+                    <p>点击"开始模拟"生成家系数据</p>
+                </div>
+            `;
+            
+            document.getElementById('stat-total').textContent = '0';
+            document.getElementById('stat-generations').textContent = '0';
+            document.getElementById('stat-male').textContent = '0';
+            document.getElementById('stat-female').textContent = '0';
+            document.getElementById('stat-max-descendants').textContent = '0';
+            document.getElementById('stat-avg-lifespan').textContent = '0';
+            
+            document.getElementById('top-descendants').innerHTML = '<p style="color: #888; text-align: center;">暂无数据</p>';
+            document.getElementById('member-detail').innerHTML = '<p style="color: #888; text-align: center;">点击家系树中的成员查看详情</p>';
+            document.getElementById('family-stats').innerHTML = '<p style="color: #888; text-align: center;">暂无数据</p>';
+        }
+        
+        // 页面加载时自动开始一次模拟
+        window.onload = function() {
+            startSimulation();
+        };
+    </script>
+</body>
+</html>
