@@ -1,0 +1,809 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>轨道抛射模拟器 - Orbital Trajectory Simulator</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background: #000;
+            overflow: hidden;
+            color: #fff;
+        }
+        
+        #canvas-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+        }
+        
+        /* 控制面板 */
+        .control-panel {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            width: 320px;
+            max-height: calc(100vh - 40px);
+            overflow-y: auto;
+            background: rgba(0, 0, 0, 0.85);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 20px;
+            z-index: 100;
+        }
+        
+        .panel-header {
+            text-align: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .panel-header h1 {
+            font-size: 18px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 5px;
+        }
+        
+        .panel-header p {
+            font-size: 12px;
+            color: #888;
+        }
+        
+        .control-group {
+            margin-bottom: 15px;
+        }
+        
+        .control-group label {
+            display: block;
+            font-size: 12px;
+            color: #888;
+            margin-bottom: 5px;
+        }
+        
+        .control-group input[type="number"],
+        .control-group input[type="range"] {
+            width: 100%;
+            padding: 8px 12px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 6px;
+            color: #fff;
+            font-size: 13px;
+        }
+        
+        .control-group input[type="range"] {
+            padding: 0;
+            height: 6px;
+            -webkit-appearance: none;
+            background: rgba(255, 255, 255, 0.1);
+        }
+        
+        .control-group input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 16px;
+            height: 16px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            border-radius: 50%;
+            cursor: pointer;
+        }
+        
+        .range-value {
+            text-align: right;
+            font-size: 12px;
+            color: #667eea;
+            margin-top: 3px;
+        }
+        
+        .btn {
+            width: 100%;
+            padding: 12px;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-bottom: 10px;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 20px rgba(102, 126, 234, 0.4);
+        }
+        
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.1);
+            color: #fff;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.15);
+        }
+        
+        /* 信息面板 */
+        .info-panel {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            width: 280px;
+            background: rgba(0, 0, 0, 0.85);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 20px;
+            z-index: 100;
+        }
+        
+        .info-panel h3 {
+            font-size: 14px;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .info-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            font-size: 13px;
+        }
+        
+        .info-row:last-child {
+            border-bottom: none;
+        }
+        
+        .info-label {
+            color: #888;
+        }
+        
+        .info-value {
+            color: #fff;
+            font-weight: 500;
+        }
+        
+        .status-orbital {
+            color: #00b894;
+        }
+        
+        .status-suborbital {
+            color: #fdcb6e;
+        }
+        
+        .status-crash {
+            color: #ff7675;
+        }
+        
+        /* 图例 */
+        .legend {
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            background: rgba(0, 0, 0, 0.85);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 15px 20px;
+            z-index: 100;
+        }
+        
+        .legend h4 {
+            font-size: 13px;
+            margin-bottom: 10px;
+        }
+        
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 12px;
+            color: #888;
+            margin-bottom: 5px;
+        }
+        
+        .legend-color {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+        }
+        
+        /* 滚动条 */
+        .control-panel::-webkit-scrollbar {
+            width: 6px;
+        }
+        
+        .control-panel::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        
+        .control-panel::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 3px;
+        }
+        
+        @media (max-width: 768px) {
+            .control-panel {
+                width: calc(100% - 40px);
+                max-height: 50vh;
+            }
+            
+            .info-panel {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="canvas-container"></div>
+    
+    <!-- 控制面板 -->
+    <div class="control-panel">
+        <div class="panel-header">
+            <h1>🚀 轨道抛射模拟器</h1>
+            <p>模拟地球表面/高空抛射轨迹</p>
+        </div>
+        
+        <!-- 发射位置 -->
+        <div class="control-group">
+            <label>发射经度 (°)</label>
+            <input type="number" id="lon" value="0" min="-180" max="180" step="1">
+        </div>
+        
+        <div class="control-group">
+            <label>发射纬度 (°)</label>
+            <input type="number" id="lat" value="0" min="-90" max="90" step="1">
+        </div>
+        
+        <div class="control-group">
+            <label>海拔高度 (km)</label>
+            <input type="number" id="altitude" value="0" min="0" max="1000" step="10">
+        </div>
+        
+        <!-- 发射参数 -->
+        <div class="control-group">
+            <label>方向角 (°) - 从正北顺时针</label>
+            <input type="range" id="azimuth" value="90" min="0" max="360" step="1">
+            <div class="range-value" id="azimuth-value">90°</div>
+        </div>
+        
+        <div class="control-group">
+            <label>俯仰角 (°)</label>
+            <input type="range" id="elevation" value="45" min="0" max="90" step="1">
+            <div class="range-value" id="elevation-value">45°</div>
+        </div>
+        
+        <div class="control-group">
+            <label>初速度 (m/s)</label>
+            <input type="number" id="velocity" value="8000" min="0" max="30000" step="100">
+        </div>
+        
+        <!-- 物理参数 -->
+        <div class="control-group">
+            <label>阻力系数 (Cd)</label>
+            <input type="number" id="drag-coeff" value="0.47" min="0" max="2" step="0.01">
+        </div>
+        
+        <div class="control-group">
+            <label>物体质量 (kg)</label>
+            <input type="number" id="mass" value="1000" min="1" max="100000" step="100">
+        </div>
+        
+        <div class="control-group">
+            <label>物体截面积 (m²)</label>
+            <input type="number" id="area" value="10" min="0.1" max="1000" step="0.1">
+        </div>
+        
+        <button class="btn btn-primary" onclick="launch()">🚀 发射</button>
+        <button class="btn btn-secondary" onclick="reset()">🔄 重置</button>
+        <button class="btn btn-secondary" onclick="togglePause()">⏸️ 暂停/继续</button>
+    </div>
+    
+    <!-- 信息面板 -->
+    <div class="info-panel">
+        <h3>📊 实时数据</h3>
+        
+        <div class="info-row">
+            <span class="info-label">状态</span>
+            <span class="info-value" id="status">准备就绪</span>
+        </div>
+        
+        <div class="info-row">
+            <span class="info-label">高度</span>
+            <span class="info-value" id="height">0 km</span>
+        </div>
+        
+        <div class="info-row">
+            <span class="info-label">速度</span>
+            <span class="info-value" id="speed">0 m/s</span>
+        </div>
+        
+        <div class="info-row">
+            <span class="info-label">距离</span>
+            <span class="info-value" id="distance">0 km</span>
+        </div>
+        
+        <div class="info-row">
+            <span class="info-label">飞行时间</span>
+            <span class="info-value" id="time">0 s</span>
+        </div>
+        
+        <div class="info-row">
+            <span class="info-label">轨道类型</span>
+            <span class="info-value" id="orbit-type">-</span>
+        </div>
+    </div>
+    
+    <!-- 图例 -->
+    <div class="legend">
+        <h4>图例</h4>
+        <div class="legend-item">
+            <div class="legend-color" style="background: #4a90d9;"></div>
+            <span>地球</span>
+        </div>
+        <div class="legend-item">
+            <div class="legend-color" style="background: #c0c0c0;"></div>
+            <span>月球</span>
+        </div>
+        <div class="legend-item">
+            <div class="legend-color" style="background: #00ff00;"></div>
+            <span>轨迹</span>
+        </div>
+        <div class="legend-item">
+            <div class="legend-color" style="background: #ff0000;"></div>
+            <span>发射点</span>
+        </div>
+    </div>
+
+    <script>
+        // ==================== 物理常数 ====================
+        const G = 6.67430e-11; // 万有引力常数
+        const M_EARTH = 5.972e24; // 地球质量 (kg)
+        const R_EARTH = 6371000; // 地球半径 (m)
+        const M_MOON = 7.342e22; // 月球质量 (kg)
+        const R_MOON = 1737400; // 月球半径 (m)
+        const D_MOON = 384400000; // 地月距离 (m)
+        
+        // 大气模型 (简化指数模型)
+        function getAirDensity(altitude) {
+            const h0 = 8500; // 标高 (m)
+            const rho0 = 1.225; // 海平面密度 (kg/m³)
+            return rho0 * Math.exp(-altitude / h0);
+        }
+        
+        // ==================== Three.js 场景 ====================
+        let scene, camera, renderer, controls;
+        let earth, moon, projectile, trajectoryLine;
+        let trajectoryPoints = [];
+        let isPaused = false;
+        let animationId = null;
+        
+        // 缩放因子 (用于可视化)
+        const SCALE = 1 / 1000000; // 1单位 = 1000km
+        
+        function init() {
+            // 场景
+            scene = new THREE.Scene();
+            scene.background = new THREE.Color(0x000000);
+            
+            // 相机
+            camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 10000);
+            camera.position.set(0, 0, 30);
+            
+            // 渲染器
+            renderer = new THREE.WebGLRenderer({ antialias: true });
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            renderer.setPixelRatio(window.devicePixelRatio);
+            document.getElementById('canvas-container').appendChild(renderer.domElement);
+            
+            // 控制器
+            controls = new THREE.OrbitControls(camera, renderer.domElement);
+            controls.enableDamping = true;
+            controls.dampingFactor = 0.05;
+            controls.minDistance = 10;
+            controls.maxDistance = 500;
+            
+            // 添加星空背景
+            addStars();
+            
+            // 创建地球
+            createEarth();
+            
+            // 创建月球
+            createMoon();
+            
+            // 创建发射点标记
+            createLaunchMarker();
+            
+            // 窗口调整
+            window.addEventListener('resize', onWindowResize, false);
+            
+            // 开始渲染循环
+            animate();
+        }
+        
+        function addStars() {
+            const geometry = new THREE.BufferGeometry();
+            const vertices = [];
+            
+            for (let i = 0; i < 5000; i++) {
+                const x = (Math.random() - 0.5) * 2000;
+                const y = (Math.random() - 0.5) * 2000;
+                const z = (Math.random() - 0.5) * 2000;
+                vertices.push(x, y, z);
+            }
+            
+            geometry.setAttribute('position', new THREE.Float32BufferAttribute(vertices, 3));
+            
+            const material = new THREE.PointsMaterial({
+                color: 0xffffff,
+                size: 0.5,
+                transparent: true,
+                opacity: 0.8
+            });
+            
+            const stars = new THREE.Points(geometry, material);
+            scene.add(stars);
+        }
+        
+        function createEarth() {
+            const geometry = new THREE.SphereGeometry(R_EARTH * SCALE, 64, 64);
+            
+            // 地球材质 (简化 - 使用蓝色)
+            const material = new THREE.MeshPhongMaterial({
+                color: 0x4a90d9,
+                emissive: 0x001133,
+                shininess: 25
+            });
+            
+            earth = new THREE.Mesh(geometry, material);
+            scene.add(earth);
+            
+            // 大气层光晕
+            const atmosphereGeometry = new THREE.SphereGeometry(R_EARTH * SCALE * 1.02, 64, 64);
+            const atmosphereMaterial = new THREE.MeshBasicMaterial({
+                color: 0x4a90d9,
+                transparent: true,
+                opacity: 0.1,
+                side: THREE.BackSide
+            });
+            const atmosphere = new THREE.Mesh(atmosphereGeometry, atmosphereMaterial);
+            scene.add(atmosphere);
+            
+            // 光照
+            const ambientLight = new THREE.AmbientLight(0x404040, 0.5);
+            scene.add(ambientLight);
+            
+            const directionalLight = new THREE.DirectionalLight(0xffffff, 1);
+            directionalLight.position.set(50, 30, 50);
+            scene.add(directionalLight);
+        }
+        
+        function createMoon() {
+            const geometry = new THREE.SphereGeometry(R_MOON * SCALE, 32, 32);
+            const material = new THREE.MeshPhongMaterial({
+                color: 0xc0c0c0,
+                emissive: 0x111111
+            });
+            
+            moon = new THREE.Mesh(geometry, material);
+            
+            // 月球位置 (简化 - 固定在x轴方向)
+            moon.position.set(D_MOON * SCALE, 0, 0);
+            scene.add(moon);
+        }
+        
+        function createLaunchMarker() {
+            const geometry = new THREE.SphereGeometry(0.2, 16, 16);
+            const material = new THREE.MeshBasicMaterial({ color: 0xff0000 });
+            const marker = new THREE.Mesh(geometry, material);
+            scene.add(marker);
+            return marker;
+        }
+        
+        // ==================== 坐标转换 ====================
+        function latLonToVector3(lat, lon, radius) {
+            const phi = (90 - lat) * Math.PI / 180;
+            const theta = (lon + 180) * Math.PI / 180;
+            
+            const x = -(radius * Math.sin(phi) * Math.cos(theta));
+            const z = radius * Math.sin(phi) * Math.sin(theta);
+            const y = radius * Math.cos(phi);
+            
+            return new THREE.Vector3(x, y, z);
+        }
+        
+        // ==================== 物理模拟 ====================
+        class Projectile {
+            constructor(lon, lat, altitude, azimuth, elevation, velocity, mass, dragCoeff, area) {
+                // 初始位置
+                const r = R_EARTH + altitude * 1000;
+                this.position = latLonToVector3(lat, lon, r);
+                
+                // 计算速度方向
+                // 方位角: 从正北顺时针
+                // 俯仰角: 从水平面向上
+                const phi = (90 - lat) * Math.PI / 180;
+                const theta = (lon + 180) * Math.PI / 180;
+                
+                // 局部坐标系
+                const north = new THREE.Vector3(
+                    -Math.sin(phi) * Math.cos(theta),
+                    Math.cos(phi),
+                    Math.sin(phi) * Math.sin(theta)
+                ).normalize();
+                
+                const east = new THREE.Vector3(
+                    -Math.sin(theta),
+                    0,
+                    -Math.cos(theta)
+                ).normalize();
+                
+                const up = this.position.clone().normalize();
+                
+                // 速度方向
+                const azimuthRad = azimuth * Math.PI / 180;
+                const elevationRad = elevation * Math.PI / 180;
+                
+                const velocityDir = new THREE.Vector3()
+                    .addScaledVector(north, Math.cos(azimuthRad) * Math.cos(elevationRad))
+                    .addScaledVector(east, Math.sin(azimuthRad) * Math.cos(elevationRad))
+                    .addScaledVector(up, Math.sin(elevationRad))
+                    .normalize();
+                
+                this.velocity = velocityDir.multiplyScalar(velocity);
+                
+                this.mass = mass;
+                this.dragCoeff = dragCoeff;
+                this.area = area;
+                
+                this.time = 0;
+                this.dt = 1; // 时间步长 (s)
+                
+                this.trajectory = [this.position.clone()];
+                this.crashed = false;
+                this.escaped = false;
+            }
+            
+            update() {
+                if (this.crashed || this.escaped) return;
+                
+                const r = this.position.length();
+                const altitude = r - R_EARTH;
+                
+                // 重力加速度
+                const g = G * M_EARTH / (r * r);
+                const gravityDir = this.position.clone().normalize().negate();
+                const gravity = gravityDir.multiplyScalar(g);
+                
+                // 空气阻力
+                let drag = new THREE.Vector3(0, 0, 0);
+                if (altitude < 100000) { // 100km以下考虑大气
+                    const rho = getAirDensity(altitude);
+                    const v = this.velocity.length();
+                    const dragMagnitude = 0.5 * rho * v * v * this.dragCoeff * this.area / this.mass;
+                    drag = this.velocity.clone().normalize().negate().multiplyScalar(dragMagnitude);
+                }
+                
+                // 总加速度
+                const acceleration = gravity.add(drag);
+                
+                // 更新速度和位置 (欧拉积分)
+                this.velocity.add(acceleration.multiplyScalar(this.dt));
+                this.position.add(this.velocity.clone().multiplyScalar(this.dt));
+                
+                this.time += this.dt;
+                
+                // 检查碰撞
+                if (this.position.length() < R_EARTH) {
+                    this.crashed = true;
+                }
+                
+                // 检查逃逸
+                if (this.position.length() > D_MOON * 1.5) {
+                    this.escaped = true;
+                }
+                
+                // 记录轨迹
+                this.trajectory.push(this.position.clone());
+                
+                return {
+                    position: this.position,
+                    velocity: this.velocity,
+                    altitude: altitude / 1000, // km
+                    speed: this.velocity.length(),
+                    time: this.time,
+                    crashed: this.crashed,
+                    escaped: this.escaped
+                };
+            }
+        }
+        
+        // ==================== 发射控制 ====================
+        let currentProjectile = null;
+        let trajectoryGeometry = null;
+        let trajectoryMaterial = null;
+        
+        function launch() {
+            // 获取参数
+            const lon = parseFloat(document.getElementById('lon').value);
+            const lat = parseFloat(document.getElementById('lat').value);
+            const altitude = parseFloat(document.getElementById('altitude').value);
+            const azimuth = parseFloat(document.getElementById('azimuth').value);
+            const elevation = parseFloat(document.getElementById('elevation').value);
+            const velocity = parseFloat(document.getElementById('velocity').value);
+            const dragCoeff = parseFloat(document.getElementById('drag-coeff').value);
+            const mass = parseFloat(document.getElementById('mass').value);
+            const area = parseFloat(document.getElementById('area').value);
+            
+            // 清除之前的轨迹
+            if (trajectoryLine) {
+                scene.remove(trajectoryLine);
+            }
+            if (projectile) {
+                scene.remove(projectile);
+            }
+            
+            // 创建抛射体
+            currentProjectile = new Projectile(
+                lon, lat, altitude, azimuth, elevation, velocity,
+                mass, dragCoeff, area
+            );
+            
+            // 创建可视化抛射体
+            const geometry = new THREE.SphereGeometry(0.3, 16, 16);
+            const material = new THREE.MeshBasicMaterial({ color: 0xffff00 });
+            projectile = new THREE.Mesh(geometry, material);
+            scene.add(projectile);
+            
+            // 创建轨迹线
+            trajectoryPoints = [];
+            trajectoryMaterial = new THREE.LineBasicMaterial({ 
+                color: 0x00ff00,
+                linewidth: 2
+            });
+            
+            // 更新状态
+            document.getElementById('status').textContent = '飞行中';
+            document.getElementById('status').className = 'info-value status-orbital';
+            
+            isPaused = false;
+        }
+        
+        function reset() {
+            if (trajectoryLine) {
+                scene.remove(trajectoryLine);
+            }
+            if (projectile) {
+                scene.remove(projectile);
+            }
+            currentProjectile = null;
+            trajectoryPoints = [];
+            
+            document.getElementById('status').textContent = '准备就绪';
+            document.getElementById('status').className = 'info-value';
+            document.getElementById('height').textContent = '0 km';
+            document.getElementById('speed').textContent = '0 m/s';
+            document.getElementById('distance').textContent = '0 km';
+            document.getElementById('time').textContent = '0 s';
+            document.getElementById('orbit-type').textContent = '-';
+        }
+        
+        function togglePause() {
+            isPaused = !isPaused;
+        }
+        
+        // ==================== 更新滑块显示 ====================
+        document.getElementById('azimuth').addEventListener('input', function() {
+            document.getElementById('azimuth-value').textContent = this.value + '°';
+        });
+        
+        document.getElementById('elevation').addEventListener('input', function() {
+            document.getElementById('elevation-value').textContent = this.value + '°';
+        });
+        
+        // ==================== 动画循环 ====================
+        function animate() {
+            animationId = requestAnimationFrame(animate);
+            
+            controls.update();
+            
+            // 更新抛射体位置
+            if (currentProjectile && !isPaused) {
+                for (let i = 0; i < 10; i++) { // 每帧更新10步以提高速度
+                    const state = currentProjectile.update();
+                    
+                    if (state) {
+                        // 更新可视化位置
+                        const visualPos = state.position.clone().multiplyScalar(SCALE);
+                        projectile.position.copy(visualPos);
+                        
+                        // 记录轨迹点
+                        trajectoryPoints.push(visualPos);
+                        
+                        // 更新UI
+                        document.getElementById('height').textContent = state.altitude.toFixed(1) + ' km';
+                        document.getElementById('speed').textContent = state.speed.toFixed(0) + ' m/s';
+                        document.getElementById('time').textContent = state.time.toFixed(0) + ' s';
+                        
+                        // 计算地面距离
+                        const distance = state.position.clone().sub(currentProjectile.trajectory[0]).length() / 1000;
+                        document.getElementById('distance').textContent = distance.toFixed(0) + ' km';
+                        
+                        // 判断轨道类型
+                        const v = state.speed;
+                        const r = state.position.length();
+                        const escapeVelocity = Math.sqrt(2 * G * M_EARTH / r);
+                        const circularVelocity = Math.sqrt(G * M_EARTH / r);
+                        
+                        let orbitType = '';
+                        if (v >= escapeVelocity) {
+                            orbitType = '逃逸轨道';
+                        } else if (v >= circularVelocity * 0.9) {
+                            orbitType = '椭圆/圆轨道';
+                        } else {
+                            orbitType = '亚轨道';
+                        }
+                        document.getElementById('orbit-type').textContent = orbitType;
+                        
+                        // 更新轨迹线
+                        if (trajectoryPoints.length > 1) {
+                            if (trajectoryLine) {
+                                scene.remove(trajectoryLine);
+                            }
+                            trajectoryGeometry = new THREE.BufferGeometry().setFromPoints(trajectoryPoints);
+                            trajectoryLine = new THREE.Line(trajectoryGeometry, trajectoryMaterial);
+                            scene.add(trajectoryLine);
+                        }
+                        
+                        // 检查结束条件
+                        if (state.crashed) {
+                            document.getElementById('status').textContent = '已坠毁';
+                            document.getElementById('status').className = 'info-value status-crash';
+                            currentProjectile = null;
+                            break;
+                        }
+                        if (state.escaped) {
+                            document.getElementById('status').textContent = '已逃逸';
+                            document.getElementById('status').className = 'info-value status-orbital';
+                            currentProjectile = null;
+                            break;
+                        }
+                    }
+                }
+            }
+            
+            renderer.render(scene, camera);
+        }
+        
+        function onWindowResize() {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        }
+        
+        // 初始化
+        init();
+    </script>
+</body>
+</html>
