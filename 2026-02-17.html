@@ -306,7 +306,7 @@
         
         <div class="content">
             <!-- 汇率与贵金属 -->
-            <div class="section" id="section-rates">
+            <div class="section active" id="section-rates">
                 <div class="section-header" onclick="toggleSection('section-rates')">
                     <span>💱 汇率与贵金属</span>
                     <span class="arrow">▼</span>
@@ -837,14 +837,28 @@
     <script>
         function toggleSection(id) {
             const section = document.getElementById(id);
-            section.classList.toggle('active');
+            if (section) {
+                section.classList.toggle('active');
+            }
         }
         
         function toggleItem(header) {
-            const content = header.nextElementSibling;
-            header.classList.toggle('active');
-            content.classList.toggle('active');
+            if (header) {
+                const content = header.nextElementSibling;
+                if (content) {
+                    header.classList.toggle('active');
+                    content.classList.toggle('active');
+                }
+            }
         }
+        
+        // 确保第一个分类默认展开
+        document.addEventListener('DOMContentLoaded', function() {
+            const firstSection = document.querySelector('.section');
+            if (firstSection) {
+                firstSection.classList.add('active');
+            }
+        });
     </script>
 </body>
 </html>
