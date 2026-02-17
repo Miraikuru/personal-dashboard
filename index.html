@@ -270,7 +270,7 @@
         }
         
         // 加载简报
-        function loadNews(date) {
+        async function loadNews(date) {
             const content = document.getElementById('content');
             
             // 显示加载状态
@@ -281,12 +281,30 @@
                 </div>
             `;
             
-            // 创建iframe加载简报
-            setTimeout(() => {
+            try {
+                // 尝试从GitHub Pages加载
+                const response = await fetch(`https://miraikuru.github.io/KimiClawPrj1StockData/${date}.html`);
+                
+                if (response.ok) {
+                    const html = await response.text();
+                    content.innerHTML = html;
+                } else {
+                    throw new Error('GitHub Pages 加载失败');
+                }
+            } catch (error) {
+                // 如果GitHub Pages失败，显示错误和GitHub链接
                 content.innerHTML = `
-                    <iframe class="news-frame" src="https://miraikuru.github.io/KimiClawPrj1StockData/${date}.html"></iframe>
+                    <div class="error">
+                        <div class="error-icon">📄</div>
+                        <h2>简报加载中</h2>
+                        <p>GitHub Pages 正在部署，请稍后刷新页面</p>
+                        <a href="https://github.com/Miraikuru/KimiClawPrj1StockData/blob/main/${date}.html" 
+                           target="_blank" class="btn btn-primary" style="margin-top: 16px;">
+                            在GitHub查看
+                        </a>
+                    </div>
                 `;
-            }, 300);
+            }
         }
         
         // 显示错误
