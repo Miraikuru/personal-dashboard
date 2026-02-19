@@ -4,8 +4,154 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>轨道抛射模拟器 - Orbital Trajectory Simulator</title>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;700&display=swap" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+    <script>
+    // OrbitControls embedded for reliability
+    (function() {
+        'use strict';
+        
+        function OrbitControls(object, domElement) {
+            this.object = object;
+            this.domElement = domElement || document;
+            
+            this.enabled = true;
+            this.target = new THREE.Vector3();
+            this.enableDamping = false;
+            this.dampingFactor = 0.05;
+            this.minDistance = 0;
+            this.maxDistance = Infinity;
+            
+            var scope = this;
+            var rotateStart = new THREE.Vector2();
+            var rotateEnd = new THREE.Vector2();
+            var rotateDelta = new THREE.Vector2();
+            var panStart = new THREE.Vector2();
+            var panEnd = new THREE.Vector2();
+            var panDelta = new THREE.Vector2();
+            var dollyStart = new THREE.Vector2();
+            var dollyEnd = new THREE.Vector2();
+            var dollyDelta = new THREE.Vector2();
+            
+            var theta = 0, phi = 0;
+            var scale = 1;
+            var panOffset = new THREE.Vector3();
+            var zoomChanged = false;
+            
+            var STATE = { NONE: -1, ROTATE: 0, DOLLY: 1, PAN: 2, TOUCH_ROTATE: 3, TOUCH_DOLLY_PAN: 4 };
+            var state = STATE.NONE;
+            
+            var spherical = new THREE.Spherical();
+            var sphericalDelta = new THREE.Spherical();
+            
+            this.update = function() {
+                var offset = new THREE.Vector3();
+                var quat = new THREE.Quaternion().setFromUnitVectors(object.up, new THREE.Vector3(0, 1, 0));
+                var quatInverse = quat.clone().invert();
+                
+                return function update() {
+                    var position = scope.object.position;
+                    offset.copy(position).sub(scope.target);
+                    offset.applyQuaternion(quat);
+                    spherical.setFromVector3(offset);
+                    
+                    if (scope.enableDamping) {
+                        spherical.theta += sphericalDelta.theta * scope.dampingFactor;
+                        spherical.phi += sphericalDelta.phi * scope.dampingFactor;
+                    } else {
+                        spherical.theta += sphericalDelta.theta;
+                        spherical.phi += sphericalDelta.phi;
+                    }
+                    
+                    spherical.phi = Math.max(0.000001, Math.min(Math.PI - 0.000001, spherical.phi));
+                    spherical.radius *= scale;
+                    spherical.radius = Math.max(scope.minDistance, Math.min(scope.maxDistance, spherical.radius));
+                    
+                    scope.target.add(panOffset);
+                    offset.setFromSpherical(spherical);
+                    offset.applyQuaternion(quatInverse);
+                    position.copy(scope.target).add(offset);
+                    scope.object.lookAt(scope.target);
+                    
+                    if (scope.enableDamping) {
+                        sphericalDelta.theta *= (1 - scope.dampingFactor);
+                        sphericalDelta.phi *= (1 - scope.dampingFactor);
+                    } else {
+                        sphericalDelta.set(0, 0, 0);
+                    }
+                    
+                    scale = 1;
+                    panOffset.set(0, 0, 0);
+                    
+                    return false;
+                };
+            }();
+            
+            function onMouseDown(event) {
+                if (!scope.enabled) return;
+                event.preventDefault();
+                
+                if (event.button === 0) {
+                    state = STATE.ROTATE;
+                    rotateStart.set(event.clientX, event.clientY);
+                } else if (event.button === 1) {
+                    state = STATE.DOLLY;
+                    dollyStart.set(event.clientX, event.clientY);
+                } else if (event.button === 2) {
+                    state = STATE.PAN;
+                    panStart.set(event.clientX, event.clientY);
+                }
+                
+                document.addEventListener('mousemove', onMouseMove, false);
+                document.addEventListener('mouseup', onMouseUp, false);
+            }
+            
+            function onMouseMove(event) {
+                if (!scope.enabled) return;
+                event.preventDefault();
+                
+                if (state === STATE.ROTATE) {
+                    rotateEnd.set(event.clientX, event.clientY);
+                    rotateDelta.subVectors(rotateEnd, rotateStart).multiplyScalar(0.005);
+                    sphericalDelta.theta -= rotateDelta.x;
+                    sphericalDelta.phi -= rotateDelta.y;
+                    rotateStart.copy(rotateEnd);
+                } else if (state === STATE.DOLLY) {
+                    dollyEnd.set(event.clientX, event.clientY);
+                    dollyDelta.subVectors(dollyEnd, dollyStart).multiplyScalar(0.01);
+                    scale *= Math.pow(0.95, dollyDelta.y);
+                    dollyStart.copy(dollyEnd);
+                }
+                
+                scope.update();
+            }
+            
+            function onMouseUp() {
+                document.removeEventListener('mousemove', onMouseMove, false);
+                document.removeEventListener('mouseup', onMouseUp, false);
+                state = STATE.NONE;
+            }
+            
+            function onMouseWheel(event) {
+                if (!scope.enabled) return;
+                event.preventDefault();
+                scale *= (event.deltaY < 0) ? 0.95 : 1.05;
+                scope.update();
+            }
+            
+            this.domElement.addEventListener('mousedown', onMouseDown, false);
+            this.domElement.addEventListener('wheel', onMouseWheel, false);
+            this.domElement.addEventListener('contextmenu', function(e) { e.preventDefault(); }, false);
+        }
+        
+        // Expose to global scope
+        if (typeof THREE !== 'undefined') {
+            THREE.OrbitControls = OrbitControls;
+        } else {
+            window.OrbitControls = OrbitControls;
+        }
+    })();
+    </script>
     <style>
         * {
             margin: 0;
@@ -14,7 +160,7 @@
         }
         
         body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            font-family: 'Noto Sans SC', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
             background: #000;
             overflow: hidden;
             color: #fff;
@@ -35,13 +181,66 @@
             left: 20px;
             width: 320px;
             max-height: calc(100vh - 40px);
-            overflow-y: auto;
+            overflow: visible;
             background: rgba(0, 0, 0, 0.85);
             backdrop-filter: blur(10px);
             border: 1px solid rgba(255, 255, 255, 0.1);
             border-radius: 12px;
             padding: 20px;
             z-index: 100;
+            transition: transform 0.3s ease, opacity 0.3s ease;
+        }
+
+        .control-panel.collapsed {
+            transform: translateX(calc(-100% + 50px));
+            opacity: 0.3;
+        }
+
+        .control-panel.collapsed:hover {
+            opacity: 0.8;
+        }
+
+        .panel-toggle {
+            position: absolute;
+            right: -35px;
+            top: 20px;
+            width: 35px;
+            height: 50px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-left: none;
+            border-radius: 0 10px 10px 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            color: #fff;
+            font-size: 18px;
+            font-weight: bold;
+            transition: all 0.2s;
+            box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.5);
+            z-index: 101;
+        }
+
+        .panel-toggle:hover {
+            background: linear-gradient(135deg, #764ba2, #667eea);
+            transform: scale(1.1);
+            box-shadow: 3px 3px 15px rgba(102, 126, 234, 0.5);
+        }
+
+        .panel-toggle:active {
+            transform: scale(0.95);
+        }
+
+        .panel-content {
+            transition: opacity 0.2s;
+            max-height: calc(100vh - 80px);
+            overflow-y: auto;
+        }
+
+        .control-panel.collapsed .panel-content {
+            opacity: 0;
+            pointer-events: none;
         }
         
         .panel-header {
@@ -247,7 +446,18 @@
                 width: calc(100% - 40px);
                 max-height: 50vh;
             }
-            
+
+            .control-panel.collapsed {
+                transform: translateX(calc(-100% + 45px));
+            }
+
+            .panel-toggle {
+                right: -30px;
+                width: 30px;
+                height: 45px;
+                font-size: 16px;
+            }
+
             .info-panel {
                 display: none;
             }
@@ -258,17 +468,19 @@
     <div id="canvas-container"></div>
     
     <!-- 控制面板 -->
-    <div class="control-panel">
-        <div class="panel-header">
-            <h1>🚀 轨道抛射模拟器</h1>
-            <p>模拟地球表面/高空抛射轨迹</p>
-        </div>
-        
-        <!-- 发射位置 -->
-        <div class="control-group">
-            <label>发射经度 (°)</label>
-            <input type="number" id="lon" value="0" min="-180" max="180" step="1">
-        </div>
+    <div class="control-panel" id="controlPanel">
+        <div class="panel-toggle" onclick="togglePanel()" title="折叠/展开">◀</div>
+        <div class="panel-content">
+            <div class="panel-header">
+                <h1>🚀 轨道抛射模拟器</h1>
+                <p>模拟地球表面/高空抛射轨迹</p>
+            </div>
+            
+            <!-- 发射位置 -->
+            <div class="control-group">
+                <label>发射经度 (°)</label>
+                <input type="number" id="lon" value="0" min="-180" max="180" step="1">
+            </div>
         
         <div class="control-group">
             <label>发射纬度 (°)</label>
@@ -317,6 +529,7 @@
         <button class="btn btn-primary" onclick="launch()">🚀 发射</button>
         <button class="btn btn-secondary" onclick="reset()">🔄 重置</button>
         <button class="btn btn-secondary" onclick="togglePause()">⏸️ 暂停/继续</button>
+        </div>
     </div>
     
     <!-- 信息面板 -->
@@ -402,6 +615,20 @@
         const SCALE = 1 / 1000000; // 1单位 = 1000km
         
         function init() {
+            console.log('Initializing simulator...');
+            
+            // 检查 Three.js 是否加载
+            if (typeof THREE === 'undefined') {
+                alert('错误：Three.js 库未能加载，请检查网络连接');
+                return;
+            }
+            console.log('Three.js loaded successfully');
+            
+            // 检查 OrbitControls 是否加载
+            if (typeof THREE.OrbitControls === 'undefined') {
+                console.warn('OrbitControls not found, trying global scope...');
+            }
+            
             // 场景
             scene = new THREE.Scene();
             scene.background = new THREE.Color(0x000000);
@@ -417,11 +644,22 @@
             document.getElementById('canvas-container').appendChild(renderer.domElement);
             
             // 控制器
-            controls = new THREE.OrbitControls(camera, renderer.domElement);
-            controls.enableDamping = true;
-            controls.dampingFactor = 0.05;
-            controls.minDistance = 10;
-            controls.maxDistance = 500;
+            if (typeof THREE.OrbitControls !== 'undefined') {
+                controls = new THREE.OrbitControls(camera, renderer.domElement);
+            } else if (typeof OrbitControls !== 'undefined') {
+                controls = new OrbitControls(camera, renderer.domElement);
+            } else {
+                console.warn('OrbitControls not available, continuing without camera controls');
+                // 创建一个简单的替代对象
+                controls = { update: function() {}, enableDamping: false };
+            }
+            
+            if (controls.enableDamping !== undefined) {
+                controls.enableDamping = true;
+                controls.dampingFactor = 0.05;
+                controls.minDistance = 10;
+                controls.maxDistance = 500;
+            }
             
             // 添加星空背景
             addStars();
@@ -513,22 +751,36 @@
             scene.add(moon);
         }
         
+        let launchMarker = null;
+        
         function createLaunchMarker() {
             const geometry = new THREE.SphereGeometry(0.2, 16, 16);
             const material = new THREE.MeshBasicMaterial({ color: 0xff0000 });
-            const marker = new THREE.Mesh(geometry, material);
-            scene.add(marker);
-            return marker;
+            launchMarker = new THREE.Mesh(geometry, material);
+            scene.add(launchMarker);
+            return launchMarker;
+        }
+        
+        function updateLaunchMarker(lon, lat, altitude) {
+            if (!launchMarker) return;
+            const r = R_EARTH + altitude * 1000;
+            const pos = latLonToVector3(lat, lon, r);
+            launchMarker.position.copy(pos.multiplyScalar(SCALE));
         }
         
         // ==================== 坐标转换 ====================
         function latLonToVector3(lat, lon, radius) {
-            const phi = (90 - lat) * Math.PI / 180;
-            const theta = (lon + 180) * Math.PI / 180;
+            // 将经纬度转换为 3D 坐标
+            // lat: 纬度 (-90 到 90), lon: 经度 (-180 到 180)
+            // 返回 Three.js 坐标系中的位置
+            const phi = (90 - lat) * Math.PI / 180;  // 从北极算起的角度
+            const theta = (lon + 180) * Math.PI / 180;  // 经度转换为弧度
             
-            const x = -(radius * Math.sin(phi) * Math.cos(theta));
-            const z = radius * Math.sin(phi) * Math.sin(theta);
+            // Three.js 坐标系: Y 轴向上
+            // 球坐标转换: x = r*sin(phi)*sin(theta), y = r*cos(phi), z = r*sin(phi)*cos(theta)
+            const x = radius * Math.sin(phi) * Math.sin(theta);
             const y = radius * Math.cos(phi);
+            const z = radius * Math.sin(phi) * Math.cos(theta);
             
             return new THREE.Vector3(x, y, z);
         }
@@ -546,17 +798,19 @@
                 const phi = (90 - lat) * Math.PI / 180;
                 const theta = (lon + 180) * Math.PI / 180;
                 
-                // 局部坐标系
+                // 局部坐标系 (基于新的坐标系)
+                // north: 指向纬度增加的方向 (南)
                 const north = new THREE.Vector3(
-                    -Math.sin(phi) * Math.cos(theta),
-                    Math.cos(phi),
-                    Math.sin(phi) * Math.sin(theta)
+                    Math.cos(phi) * Math.sin(theta),
+                    -Math.sin(phi),
+                    Math.cos(phi) * Math.cos(theta)
                 ).normalize();
                 
+                // east: 指向经度增加的方向
                 const east = new THREE.Vector3(
-                    -Math.sin(theta),
+                    Math.cos(theta),
                     0,
-                    -Math.cos(theta)
+                    -Math.sin(theta)
                 ).normalize();
                 
                 const up = this.position.clone().normalize();
@@ -645,36 +899,64 @@
         let trajectoryMaterial = null;
         
         function launch() {
+            console.log('Launch button clicked');
+            
+            // 检查场景是否初始化
+            if (!scene) {
+                alert('模拟器尚未初始化完成，请刷新页面重试');
+                return;
+            }
+            
             // 获取参数
-            const lon = parseFloat(document.getElementById('lon').value);
-            const lat = parseFloat(document.getElementById('lat').value);
-            const altitude = parseFloat(document.getElementById('altitude').value);
-            const azimuth = parseFloat(document.getElementById('azimuth').value);
-            const elevation = parseFloat(document.getElementById('elevation').value);
-            const velocity = parseFloat(document.getElementById('velocity').value);
-            const dragCoeff = parseFloat(document.getElementById('drag-coeff').value);
-            const mass = parseFloat(document.getElementById('mass').value);
-            const area = parseFloat(document.getElementById('area').value);
+            const lon = parseFloat(document.getElementById('lon').value) || 0;
+            const lat = parseFloat(document.getElementById('lat').value) || 0;
+            const altitude = parseFloat(document.getElementById('altitude').value) || 0;
+            const azimuth = parseFloat(document.getElementById('azimuth').value) || 90;
+            const elevation = parseFloat(document.getElementById('elevation').value) || 45;
+            const velocity = parseFloat(document.getElementById('velocity').value) || 8000;
+            const dragCoeff = parseFloat(document.getElementById('drag-coeff').value) || 0.47;
+            const mass = parseFloat(document.getElementById('mass').value) || 1000;
+            const area = parseFloat(document.getElementById('area').value) || 10;
+            
+            console.log('Launch params:', { lon, lat, altitude, azimuth, elevation, velocity, mass, dragCoeff, area });
+            
+            // 验证参数
+            if (velocity <= 0) {
+                alert('速度必须大于 0');
+                return;
+            }
             
             // 清除之前的轨迹
             if (trajectoryLine) {
                 scene.remove(trajectoryLine);
+                trajectoryLine = null;
             }
             if (projectile) {
                 scene.remove(projectile);
+                projectile = null;
             }
             
+            // 更新发射标记位置
+            updateLaunchMarker(lon, lat, altitude);
+            
             // 创建抛射体
-            currentProjectile = new Projectile(
-                lon, lat, altitude, azimuth, elevation, velocity,
-                mass, dragCoeff, area
-            );
+            try {
+                currentProjectile = new Projectile(
+                    lon, lat, altitude, azimuth, elevation, velocity,
+                    mass, dragCoeff, area
+                );
+            } catch (e) {
+                console.error('Error creating projectile:', e);
+                alert('创建抛射体时出错: ' + e.message);
+                return;
+            }
             
             // 创建可视化抛射体
             const geometry = new THREE.SphereGeometry(0.3, 16, 16);
             const material = new THREE.MeshBasicMaterial({ color: 0xffff00 });
             projectile = new THREE.Mesh(geometry, material);
             scene.add(projectile);
+            console.log('Projectile mesh added to scene');
             
             // 创建轨迹线
             trajectoryPoints = [];
@@ -684,56 +966,116 @@
             });
             
             // 更新状态
-            document.getElementById('status').textContent = '飞行中';
-            document.getElementById('status').className = 'info-value status-orbital';
+            const statusEl = document.getElementById('status');
+            if (statusEl) {
+                statusEl.textContent = '飞行中';
+                statusEl.className = 'info-value status-orbital';
+            }
             
             isPaused = false;
+            console.log('Launch complete, simulation started');
         }
         
         function reset() {
             if (trajectoryLine) {
                 scene.remove(trajectoryLine);
+                trajectoryLine = null;
             }
             if (projectile) {
                 scene.remove(projectile);
+                projectile = null;
             }
             currentProjectile = null;
             trajectoryPoints = [];
             
-            document.getElementById('status').textContent = '准备就绪';
-            document.getElementById('status').className = 'info-value';
-            document.getElementById('height').textContent = '0 km';
-            document.getElementById('speed').textContent = '0 m/s';
-            document.getElementById('distance').textContent = '0 km';
-            document.getElementById('time').textContent = '0 s';
-            document.getElementById('orbit-type').textContent = '-';
+            const statusEl = document.getElementById('status');
+            const heightEl = document.getElementById('height');
+            const speedEl = document.getElementById('speed');
+            const distanceEl = document.getElementById('distance');
+            const timeEl = document.getElementById('time');
+            const orbitTypeEl = document.getElementById('orbit-type');
+            
+            if (statusEl) {
+                statusEl.textContent = '准备就绪';
+                statusEl.className = 'info-value';
+            }
+            if (heightEl) heightEl.textContent = '0 km';
+            if (speedEl) speedEl.textContent = '0 m/s';
+            if (distanceEl) distanceEl.textContent = '0 km';
+            if (timeEl) timeEl.textContent = '0 s';
+            if (orbitTypeEl) orbitTypeEl.textContent = '-';
         }
         
         function togglePause() {
             isPaused = !isPaused;
         }
         
+        // ==================== 面板折叠功能 ====================
+        let isPanelCollapsed = false;
+
+        function togglePanel() {
+            const panel = document.getElementById('controlPanel');
+            const toggle = panel.querySelector('.panel-toggle');
+            isPanelCollapsed = !isPanelCollapsed;
+
+            if (isPanelCollapsed) {
+                panel.classList.add('collapsed');
+                toggle.textContent = '▶';
+                toggle.title = '展开 (按 H 键)';
+            } else {
+                panel.classList.remove('collapsed');
+                toggle.textContent = '◀';
+                toggle.title = '折叠 (按 H 键)';
+            }
+        }
+
+        // 键盘快捷键
+        document.addEventListener('keydown', function(e) {
+            // 按 H 键切换面板
+            if (e.key === 'h' || e.key === 'H') {
+                togglePanel();
+            }
+        });
+
         // ==================== 更新滑块显示 ====================
-        document.getElementById('azimuth').addEventListener('input', function() {
-            document.getElementById('azimuth-value').textContent = this.value + '°';
-        });
-        
-        document.getElementById('elevation').addEventListener('input', function() {
-            document.getElementById('elevation-value').textContent = this.value + '°';
-        });
+        function setupSliderListeners() {
+            const azimuthSlider = document.getElementById('azimuth');
+            const elevationSlider = document.getElementById('elevation');
+            
+            if (azimuthSlider) {
+                azimuthSlider.addEventListener('input', function() {
+                    document.getElementById('azimuth-value').textContent = this.value + '°';
+                });
+            }
+            
+            if (elevationSlider) {
+                elevationSlider.addEventListener('input', function() {
+                    document.getElementById('elevation-value').textContent = this.value + '°';
+                });
+            }
+        }
         
         // ==================== 动画循环 ====================
         function animate() {
             animationId = requestAnimationFrame(animate);
             
-            controls.update();
+            if (controls && controls.update) {
+                controls.update();
+            }
             
             // 更新抛射体位置
             if (currentProjectile && !isPaused) {
+                let shouldStop = false;
                 for (let i = 0; i < 10; i++) { // 每帧更新10步以提高速度
                     const state = currentProjectile.update();
                     
-                    if (state) {
+                    if (!state) {
+                        // 抛射体已坠毁或逃逸
+                        shouldStop = true;
+                        break;
+                    }
+                    
+                    if (projectile) {
                         // 更新可视化位置
                         const visualPos = state.position.clone().multiplyScalar(SCALE);
                         projectile.position.copy(visualPos);
@@ -742,13 +1084,21 @@
                         trajectoryPoints.push(visualPos);
                         
                         // 更新UI
-                        document.getElementById('height').textContent = state.altitude.toFixed(1) + ' km';
-                        document.getElementById('speed').textContent = state.speed.toFixed(0) + ' m/s';
-                        document.getElementById('time').textContent = state.time.toFixed(0) + ' s';
+                        const heightEl = document.getElementById('height');
+                        const speedEl = document.getElementById('speed');
+                        const timeEl = document.getElementById('time');
+                        const distanceEl = document.getElementById('distance');
+                        const orbitTypeEl = document.getElementById('orbit-type');
+                        
+                        if (heightEl) heightEl.textContent = state.altitude.toFixed(1) + ' km';
+                        if (speedEl) speedEl.textContent = state.speed.toFixed(0) + ' m/s';
+                        if (timeEl) timeEl.textContent = state.time.toFixed(0) + ' s';
                         
                         // 计算地面距离
-                        const distance = state.position.clone().sub(currentProjectile.trajectory[0]).length() / 1000;
-                        document.getElementById('distance').textContent = distance.toFixed(0) + ' km';
+                        if (currentProjectile.trajectory && currentProjectile.trajectory.length > 0) {
+                            const distance = state.position.clone().sub(currentProjectile.trajectory[0]).length() / 1000;
+                            if (distanceEl) distanceEl.textContent = distance.toFixed(0) + ' km';
+                        }
                         
                         // 判断轨道类型
                         const v = state.speed;
@@ -764,7 +1114,7 @@
                         } else {
                             orbitType = '亚轨道';
                         }
-                        document.getElementById('orbit-type').textContent = orbitType;
+                        if (orbitTypeEl) orbitTypeEl.textContent = orbitType;
                         
                         // 更新轨迹线
                         if (trajectoryPoints.length > 1) {
@@ -778,22 +1128,33 @@
                         
                         // 检查结束条件
                         if (state.crashed) {
-                            document.getElementById('status').textContent = '已坠毁';
-                            document.getElementById('status').className = 'info-value status-crash';
-                            currentProjectile = null;
+                            const statusEl = document.getElementById('status');
+                            if (statusEl) {
+                                statusEl.textContent = '已坠毁';
+                                statusEl.className = 'info-value status-crash';
+                            }
+                            shouldStop = true;
                             break;
                         }
                         if (state.escaped) {
-                            document.getElementById('status').textContent = '已逃逸';
-                            document.getElementById('status').className = 'info-value status-orbital';
-                            currentProjectile = null;
+                            const statusEl = document.getElementById('status');
+                            if (statusEl) {
+                                statusEl.textContent = '已逃逸';
+                                statusEl.className = 'info-value status-orbital';
+                            }
+                            shouldStop = true;
                             break;
                         }
                     }
                 }
+                if (shouldStop) {
+                    currentProjectile = null;
+                }
             }
             
-            renderer.render(scene, camera);
+            if (renderer && scene && camera) {
+                renderer.render(scene, camera);
+            }
         }
         
         function onWindowResize() {
@@ -803,6 +1164,7 @@
         }
         
         // 初始化
+        setupSliderListeners();
         init();
     </script>
 </body>

@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>折叠按钮位置说明</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background: #1a1a2e;
+            color: #fff;
+            padding: 40px;
+            line-height: 1.6;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        h1 {
+            color: #667eea;
+            margin-bottom: 30px;
+        }
+        .diagram {
+            background: #16213e;
+            border-radius: 12px;
+            padding: 30px;
+            margin: 30px 0;
+            position: relative;
+        }
+        .panel-demo {
+            width: 300px;
+            height: 400px;
+            background: rgba(0, 0, 0, 0.85);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 20px;
+            position: relative;
+        }
+        .toggle-btn {
+            position: absolute;
+            right: -30px;
+            top: 20px;
+            width: 30px;
+            height: 40px;
+            background: rgba(0, 0, 0, 0.85);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-left: none;
+            border-radius: 0 8px 8px 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #fff;
+            font-size: 14px;
+        }
+        .toggle-btn::after {
+            content: "◀";
+        }
+        .arrow {
+            position: absolute;
+            right: -120px;
+            top: 30px;
+            color: #ff7675;
+            font-size: 24px;
+            font-weight: bold;
+        }
+        .arrow::before {
+            content: "← 折叠按钮在这里";
+            white-space: nowrap;
+        }
+        .note {
+            background: #0f3460;
+            border-left: 4px solid #667eea;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 0 8px 8px 0;
+        }
+        .highlight {
+            color: #00b894;
+            font-weight: bold;
+        }
+        code {
+            background: rgba(255,255,255,0.1);
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-family: monospace;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎯 折叠按钮位置说明</h1>
+        
+        <p>折叠按钮位于<strong>控制面板的右侧边缘</strong>，是一个小的黑色按钮，上面有一个向左的箭头 <code>◀</code>。</p>
+        
+        <div class="diagram">
+            <div class="panel-demo">
+                <div style="color: #888; font-size: 14px;">🚀 轨道抛射模拟器</div>
+                <div style="color: #666; font-size: 12px; margin-top: 5px;">模拟地球表面/高空抛射轨迹</div>
+                <div style="margin-top: 30px; color: #888; font-size: 12px;">
+                    <div style="margin: 10px 0;">发射经度...</div>
+                    <div style="margin: 10px 0;">发射纬度...</div>
+                    <div style="margin: 10px 0;">海拔高度...</div>
+                    <div style="margin: 10px 0;">...</div>
+                </div>
+                <div class="toggle-btn"></div>
+                <div class="arrow"></div>
+            </div>
+        </div>
+
+        <div class="note">
+            <p><span class="highlight">💡 提示：</span></p>
+            <ul>
+                <li>按钮在控制面板的<strong>右上角外侧</strong></li>
+                <li>点击 <code>◀</code> 可以折叠面板</li>
+                <li>折叠后按钮会变成 <code>▶</code>，点击可以展开</li>
+                <li>如果看不到按钮，尝试将鼠标移到控制面板右侧边缘</li>
+            </ul>
+        </div>
+
+        <h2>📱 移动端</h2>
+        <p>在手机上，按钮位置相同，但尺寸会稍微小一些。</p>
+
+        <h2>🔧 如果还是找不到</h2>
+        <p>请检查：</p>
+        <ol>
+            <li>页面是否已完全加载（等待 3-5 秒）</li>
+            <li>是否有浏览器插件遮挡了按钮</li>
+            <li>尝试按 <code>F12</code> 打开开发者工具，查看是否有错误信息</li>
+        </ol>
+    </div>
+</body>
+</html>

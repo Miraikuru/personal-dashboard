@@ -225,6 +225,9 @@
                 </select>
             </div>
             
+            <a href="./tools/morse-code-converter/" class="btn btn-secondary" title="摩尔斯电码">
+                <span>摩尔斯电码</span>
+            </a>
             <a href="https://github.com/Miraikuru/KimiClawPrj1StockData" target="_blank" class="btn btn-secondary" title="GitHub仓库">
                 <span>GitHub</span> ↗
             </a>
@@ -252,8 +255,6 @@
     <script>
         // 可用的简报日期列表 - 每次部署时更新
         const availableDates = [
-            '2026-02-19',
-            '2026-02-18',
             '2026-02-17',
             '2026-02-16'
         ];
@@ -347,7 +348,7 @@
                             elements.newsFrame.style.display = 'block';
                         }
                     } catch (e) {
-                        // 这是获取加载失败
+                        // 跨域或加载失败
                         showError(date);
                     }
                 }

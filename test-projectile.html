@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Projectile Test</title>
+</head>
+<body>
+    <h1>Projectile Simulation Test</h1>
+    <div id="output"></div>
+    <script>
+        const G = 6.67430e-11;
+        const M_EARTH = 5.972e24;
+        const R_EARTH = 6371000;
+        
+        function latLonToVector3(lat, lon, radius) {
+            const phi = (90 - lat) * Math.PI / 180;
+            const theta = (lon + 180) * Math.PI / 180;
+            const x = radius * Math.sin(phi) * Math.sin(theta);
+            const y = radius * Math.cos(phi);
+            const z = radius * Math.sin(phi) * Math.cos(theta);
+            return { x, y, z };
+        }
+        
+        function simulate() {
+            const lon = 0, lat = 0, altitude = 0;
+            const azimuth = 90, elevation = 45, velocity = 8000;
+            
+            const r = R_EARTH + altitude * 1000;
+            let position = latLonToVector3(lat, lon, r);
+            
+            const phi = (90 - lat) * Math.PI / 180;
+            const theta = (lon + 180) * Math.PI / 180;
+            
+            const north = {
+                x: Math.cos(phi) * Math.sin(theta),
+                y: -Math.sin(phi),
+                z: Math.cos(phi) * Math.cos(theta)
+            };
+            
+            const east = {
+                x: Math.cos(theta),
+                y: 0,
+                z: -Math.sin(theta)
+            };
+            
+            const posLen = Math.sqrt(position.x**2 + position.y**2 + position.z**2);
+            const up = {
+                x: position.x / posLen,
+                y: position.y / posLen,
+                z: position.z / posLen
+            };
+            
+            const azimuthRad = azimuth * Math.PI / 180;
+            const elevationRad = elevation * Math.PI / 180;
+            
+            let vel = {
+                x: velocity * (Math.cos(azimuthRad) * Math.cos(elevationRad) * north.x + Math.sin(azimuthRad) * Math.cos(elevationRad) * east.x + Math.sin(elevationRad) * up.x),
+                y: velocity * (Math.cos(azimuthRad) * Math.cos(elevationRad) * north.y + Math.sin(azimuthRad) * Math.cos(elevationRad) * east.y + Math.sin(elevationRad) * up.y),
+                z: velocity * (Math.cos(azimuthRad) * Math.cos(elevationRad) * north.z + Math.sin(azimuthRad) * Math.cos(elevationRad) * east.z + Math.sin(elevationRad) * up.z)
+            };
+            
+            let output = '<h2>Initial State</h2>';
+            output += '<p>Position: (' + position.x.toFixed(2) + ', ' + position.y.toFixed(2) + ', ' + position.z.toFixed(2) + ')</p>';
+            output += '<p>Position length: ' + posLen.toFixed(2) + ' (R_EARTH: ' + R_EARTH + ')</p>';
+            output += '<p>Velocity: (' + vel.x.toFixed(2) + ', ' + vel.y.toFixed(2) + ', ' + vel.z.toFixed(2) + ')</p>';
+            output += '<p>Up vector: (' + up.x.toFixed(4) + ', ' + up.y.toFixed(4) + ', ' + up.z.toFixed(4) + ')</p>';
+            
+            const dt = 1;
+            let time = 0;
+            let crashed = false;
+            let trajectory = [{ ...position }];
+            
+            output += '<h2>Simulation Steps</h2>';
+            
+            for (let step = 0; step < 20; step++) {
+                const r_len = Math.sqrt(position.x**2 + position.y**2 + position.z**2);
+                const alt = r_len - R_EARTH;
+                
+                const g = G * M_EARTH / (r_len * r_len);
+                const gx = -g * position.x / r_len;
+                const gy = -g * position.y / r_len;
+                const gz = -g * position.z / r_len;
+                
+                vel.x += gx * dt;
+                vel.y += gy * dt;
+                vel.z += gz * dt;
+                
+                position.x += vel.x * dt;
+                position.y += vel.y * dt;
+                position.z += vel.z * dt;
+                
+                time += dt;
+                
+                const new_r = Math.sqrt(position.x**2 + position.y**2 + position.z**2);
+                
+                output += '<p>Step ' + (step + 1) + ': altitude = ' + (new_r - R_EARTH).toFixed(0) + ' m';
+                
+                if (new_r < R_EARTH) {
+                    output += ' <strong>CRASH!</strong>';
+                    crashed = true;
+                    break;
+                }
+                output += '</p>';
+                
+                trajectory.push({ ...position });
+            }
+            
+            output += '<h2>Result</h2>';
+            output += '<p>Total steps: ' + trajectory.length + '</p>';
+            output += '<p>Crashed: ' + crashed + '</p>';
+            
+            document.getElementById('output').innerHTML = output;
+        }
+        
+        simulate();
+    </script>
+</body>
+</html>

@@ -1,0 +1,597 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>摩尔斯电码转码器</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        
+        .container {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 40px;
+            width: 100%;
+            max-width: 600px;
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        h1 {
+            color: #fff;
+            text-align: center;
+            margin-bottom: 10px;
+            font-size: 28px;
+            text-shadow: 0 0 20px rgba(100, 200, 255, 0.5);
+        }
+        
+        .subtitle {
+            color: rgba(255, 255, 255, 0.6);
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 14px;
+        }
+        
+        .input-section {
+            margin-bottom: 25px;
+        }
+        
+        label {
+            display: block;
+            color: rgba(255, 255, 255, 0.8);
+            margin-bottom: 10px;
+            font-size: 14px;
+        }
+        
+        textarea {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            background: rgba(0, 0, 0, 0.3);
+            color: #fff;
+            font-size: 16px;
+            resize: vertical;
+            min-height: 80px;
+            transition: all 0.3s ease;
+        }
+        
+        textarea:focus {
+            outline: none;
+            border-color: #00d4ff;
+            box-shadow: 0 0 15px rgba(0, 212, 255, 0.3);
+        }
+        
+        textarea::placeholder {
+            color: rgba(255, 255, 255, 0.3);
+        }
+        
+        .morse-output {
+            background: rgba(0, 0, 0, 0.4);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 25px;
+            min-height: 60px;
+            font-family: 'Courier New', monospace;
+            font-size: 20px;
+            color: #00ff88;
+            letter-spacing: 3px;
+            word-break: break-all;
+            line-height: 1.8;
+            border: 1px solid rgba(0, 255, 136, 0.2);
+        }
+        
+        .morse-output:empty::before {
+            content: "摩尔斯电码将显示在这里...";
+            color: rgba(255, 255, 255, 0.3);
+            font-size: 14px;
+        }
+        
+        .controls {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            margin-bottom: 25px;
+        }
+        
+        button {
+            flex: 1;
+            min-width: 120px;
+            padding: 15px 25px;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        .btn-convert {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        
+        .btn-convert:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.4);
+        }
+        
+        .btn-play {
+            background: linear-gradient(135deg, #00d4ff 0%, #0099cc 100%);
+            color: white;
+        }
+        
+        .btn-play:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(0, 212, 255, 0.4);
+        }
+        
+        .btn-play:disabled {
+            background: rgba(255, 255, 255, 0.1);
+            color: rgba(255, 255, 255, 0.3);
+            cursor: not-allowed;
+        }
+        
+        .btn-clear {
+            background: rgba(255, 255, 255, 0.1);
+            color: rgba(255, 255, 255, 0.8);
+        }
+        
+        .btn-clear:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+        
+        .settings {
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 25px;
+        }
+        
+        .setting-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        
+        .setting-row:last-child {
+            margin-bottom: 0;
+        }
+        
+        .setting-label {
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 14px;
+        }
+        
+        input[type="range"] {
+            width: 150px;
+            accent-color: #00d4ff;
+        }
+        
+        .speed-value {
+            color: #00d4ff;
+            font-weight: 600;
+            min-width: 50px;
+            text-align: right;
+        }
+        
+        .visualizer {
+            height: 80px;
+            background: rgba(0, 0, 0, 0.4);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 4px;
+            padding: 10px;
+            overflow-x: auto;
+            border: 1px solid rgba(0, 212, 255, 0.2);
+        }
+        
+        .morse-symbol {
+            width: 20px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            color: rgba(255, 255, 255, 0.3);
+            transition: all 0.1s ease;
+        }
+        
+        .morse-symbol.active {
+            color: #00ff88;
+            text-shadow: 0 0 20px #00ff88;
+            transform: scale(1.3);
+        }
+        
+        .morse-symbol.dot {
+            color: #00d4ff;
+        }
+        
+        .morse-symbol.dash {
+            color: #ff6b6b;
+        }
+        
+        .reference {
+            margin-top: 25px;
+            padding-top: 25px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .reference h3 {
+            color: rgba(255, 255, 255, 0.8);
+            margin-bottom: 15px;
+            font-size: 16px;
+        }
+        
+        .reference-grid {
+            display: grid;
+            grid-template-columns: repeat(6, 1fr);
+            gap: 8px;
+            font-size: 12px;
+        }
+        
+        .reference-item {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 8px;
+            border-radius: 6px;
+            text-align: center;
+            color: rgba(255, 255, 255, 0.7);
+        }
+        
+        .reference-item .char {
+            color: #fff;
+            font-weight: 600;
+            font-size: 14px;
+        }
+        
+        .reference-item .code {
+            color: #00ff88;
+            font-family: monospace;
+            margin-top: 4px;
+        }
+        
+        @media (max-width: 480px) {
+            .container {
+                padding: 25px;
+            }
+            
+            h1 {
+                font-size: 22px;
+            }
+            
+            .reference-grid {
+                grid-template-columns: repeat(4, 1fr);
+            }
+            
+            button {
+                min-width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>⚡ 摩尔斯电码转码器</h1>
+        <p class="subtitle">输入字母和数字，转换为摩尔斯电码并播放音频</p>
+        
+        <div class="input-section">
+            <label for="input-text">输入文本（支持 A-Z, 0-9, 空格）</label>
+            <textarea id="input-text" placeholder="例如：HELLO WORLD 或 SOS"></textarea>
+        </div>
+        
+        <div class="morse-output" id="morse-output"></div>
+        
+        <div class="controls">
+            <button class="btn-convert" onclick="convertToMorse()">转换</button>
+            <button class="btn-play" id="play-btn" onclick="playMorse()" disabled>▶ 播放</button>
+            <button class="btn-clear" onclick="clearAll()">清空</button>
+        </div>
+        
+        <div class="settings">
+            <div class="setting-row">
+                <span class="setting-label">播放速度 (WPM)</span>
+                <div>
+                    <input type="range" id="speed" min="5" max="30" value="15" oninput="updateSpeedDisplay()">
+                    <span class="speed-value" id="speed-value">15</span>
+                </div>
+            </div>
+            <div class="setting-row">
+                <span class="setting-label">音频频率 (Hz)</span>
+                <div>
+                    <input type="range" id="frequency" min="400" max="1200" value="800" oninput="updateFreqDisplay()">
+                    <span class="speed-value" id="freq-value">800</span>
+                </div>
+            </div>
+        </div>
+        
+        <div class="visualizer" id="visualizer"></div>
+        
+        <div class="reference">
+            <h3>📋 摩尔斯电码对照表</h3>
+            <div class="reference-grid" id="reference-grid"></div>
+        </div>
+    </div>
+
+    <script>
+        // 摩尔斯电码映射表
+        const morseCode = {
+            'A': '.-', 'B': '-...', 'C': '-.-.', 'D': '-..', 'E': '.',
+            'F': '..-.', 'G': '--.', 'H': '....', 'I': '..', 'J': '.---',
+            'K': '-.-', 'L': '.-..', 'M': '--', 'N': '-.', 'O': '---',
+            'P': '.--.', 'Q': '--.-', 'R': '.-.', 'S': '...', 'T': '-',
+            'U': '..-', 'V': '...-', 'W': '.--', 'X': '-..-', 'Y': '-.--',
+            'Z': '--..',
+            '0': '-----', '1': '.----', '2': '..---', '3': '...--',
+            '4': '....-', '5': '.....', '6': '-....', '7': '--...',
+            '8': '---..', '9': '----.'
+        };
+        
+        let currentMorse = '';
+        let audioContext = null;
+        let isPlaying = false;
+        
+        // 初始化参考表
+        function initReference() {
+            const grid = document.getElementById('reference-grid');
+            const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'.split('');
+            
+            chars.forEach(char => {
+                const item = document.createElement('div');
+                item.className = 'reference-item';
+                item.innerHTML = `
+                    <div class="char">${char}</div>
+                    <div class="code">${morseCode[char]}</div>
+                `;
+                grid.appendChild(item);
+            });
+        }
+        
+        // 转换为摩尔斯电码
+        function convertToMorse() {
+            const input = document.getElementById('input-text').value.toUpperCase();
+            const output = document.getElementById('morse-output');
+            
+            if (!input.trim()) {
+                output.textContent = '';
+                document.getElementById('play-btn').disabled = true;
+                currentMorse = '';
+                return;
+            }
+            
+            let morse = '';
+            for (let char of input) {
+                if (char === ' ') {
+                    morse += ' / ';
+                } else if (morseCode[char]) {
+                    morse += morseCode[char] + ' ';
+                }
+            }
+            
+            currentMorse = morse.trim();
+            output.textContent = currentMorse;
+            document.getElementById('play-btn').disabled = !currentMorse;
+            
+            // 更新可视化
+            updateVisualizer();
+        }
+        
+        // 更新可视化
+        function updateVisualizer() {
+            const visualizer = document.getElementById('visualizer');
+            visualizer.innerHTML = '';
+            
+            if (!currentMorse) return;
+            
+            const symbols = currentMorse.replace(/\//g, ' ').trim().split(' ');
+            
+            symbols.forEach((symbol, index) => {
+                if (symbol === '') return;
+                
+                for (let char of symbol) {
+                    const div = document.createElement('div');
+                    div.className = 'morse-symbol';
+                    div.textContent = char === '.' ? '●' : '▬';
+                    div.dataset.index = visualizer.children.length;
+                    if (char === '.') div.classList.add('dot');
+                    if (char === '-') div.classList.add('dash');
+                    visualizer.appendChild(div);
+                }
+                
+                // 添加间隔
+                if (index < symbols.length - 1) {
+                    const space = document.createElement('div');
+                    space.className = 'morse-symbol';
+                    space.style.width = '10px';
+                    visualizer.appendChild(space);
+                }
+            });
+        }
+        
+        // 播放摩尔斯电码
+        async function playMorse() {
+            if (isPlaying || !currentMorse) return;
+            
+            isPlaying = true;
+            const playBtn = document.getElementById('play-btn');
+            playBtn.textContent = '⏹ 停止';
+            playBtn.onclick = stopMorse;
+            
+            // 初始化音频上下文
+            if (!audioContext) {
+                audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            }
+            
+            const wpm = parseInt(document.getElementById('speed').value);
+            const frequency = parseInt(document.getElementById('frequency').value);
+            
+            // 计算时间（标准摩尔斯电码时序）
+            const dotDuration = 1200 / wpm; // 毫秒
+            const dashDuration = dotDuration * 3;
+            const symbolGap = dotDuration;
+            const letterGap = dotDuration * 3;
+            const wordGap = dotDuration * 7;
+            
+            const symbols = document.querySelectorAll('.morse-symbol:not([style*="width"])');
+            let currentIndex = 0;
+            
+            function playNext() {
+                if (!isPlaying || currentIndex >= symbols.length) {
+                    stopMorse();
+                    return;
+                }
+                
+                const symbol = symbols[currentIndex];
+                const char = symbol.textContent;
+                
+                // 高亮当前符号
+                symbols.forEach(s => s.classList.remove('active'));
+                symbol.classList.add('active');
+                symbol.scrollIntoView({ behavior: 'smooth', inline: 'center' });
+                
+                // 播放音频
+                if (char === '●' || char === '▬') {
+                    const duration = char === '●' ? dotDuration : dashDuration;
+                    playTone(frequency, duration);
+                    
+                    setTimeout(() => {
+                        currentIndex++;
+                        playNext();
+                    }, duration + symbolGap);
+                } else {
+                    currentIndex++;
+                    playNext();
+                }
+            }
+            
+            // 解析摩尔斯电码并播放
+            const morseArray = currentMorse.split(' ');
+            let delay = 0;
+            
+            for (let i = 0; i < morseArray.length; i++) {
+                const item = morseArray[i];
+                
+                if (item === '/') {
+                    // 单词间隔
+                    delay += wordGap - letterGap;
+                } else {
+                    for (let j = 0; j < item.length; j++) {
+                        const char = item[j];
+                        const duration = char === '.' ? dotDuration : dashDuration;
+                        
+                        setTimeout(() => {
+                            if (isPlaying) {
+                                playTone(frequency, duration);
+                                highlightSymbol(i, j);
+                            }
+                        }, delay);
+                        
+                        delay += duration + symbolGap;
+                    }
+                    delay += letterGap - symbolGap;
+                }
+            }
+            
+            // 播放结束后重置
+            setTimeout(() => {
+                if (isPlaying) stopMorse();
+            }, delay);
+        }
+        
+        // 播放单音
+        function playTone(frequency, duration) {
+            const oscillator = audioContext.createOscillator();
+            const gainNode = audioContext.createGain();
+            
+            oscillator.connect(gainNode);
+            gainNode.connect(audioContext.destination);
+            
+            oscillator.frequency.value = frequency;
+            oscillator.type = 'sine';
+            
+            gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+            gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + duration / 1000);
+            
+            oscillator.start(audioContext.currentTime);
+            oscillator.stop(audioContext.currentTime + duration / 1000);
+        }
+        
+        // 高亮符号
+        function highlightSymbol(wordIndex, charIndex) {
+            const symbols = document.querySelectorAll('.morse-symbol:not([style*="width"])');
+            let count = 0;
+            
+            for (let i = 0; i < wordIndex; i++) {
+                const item = currentMorse.split(' ')[i];
+                if (item !== '/') {
+                    count += item.length + 1;
+                } else {
+                    count += 1;
+                }
+            }
+            count += charIndex;
+            
+            symbols.forEach(s => s.classList.remove('active'));
+            if (symbols[count]) {
+                symbols[count].classList.add('active');
+                symbols[count].scrollIntoView({ behavior: 'smooth', inline: 'center' });
+            }
+        }
+        
+        // 停止播放
+        function stopMorse() {
+            isPlaying = false;
+            const playBtn = document.getElementById('play-btn');
+            playBtn.textContent = '▶ 播放';
+            playBtn.onclick = playMorse;
+            
+            document.querySelectorAll('.morse-symbol').forEach(s => s.classList.remove('active'));
+        }
+        
+        // 清空
+        function clearAll() {
+            document.getElementById('input-text').value = '';
+            document.getElementById('morse-output').textContent = '';
+            document.getElementById('visualizer').innerHTML = '';
+            document.getElementById('play-btn').disabled = true;
+            currentMorse = '';
+            stopMorse();
+        }
+        
+        // 更新速度显示
+        function updateSpeedDisplay() {
+            document.getElementById('speed-value').textContent = document.getElementById('speed').value;
+        }
+        
+        // 更新频率显示
+        function updateFreqDisplay() {
+            document.getElementById('freq-value').textContent = document.getElementById('frequency').value;
+        }
+        
+        // 实时转换
+        document.getElementById('input-text').addEventListener('input', convertToMorse);
+        
+        // 初始化
+        initReference();
+    </script>
+</body>
+</html>
