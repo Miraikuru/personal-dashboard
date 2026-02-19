@@ -1,4 +1,379 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-  
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>每日简报 - Kimi Claw</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        html, body {
+            height: 100%;
+            overflow: hidden;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            background: #0f0f1a;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        /* 顶部导航 */
+        .header {
+            background: #1a1a2e;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+            padding: 12px 24px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-shrink: 0;
+        }
+        
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            text-decoration: none;
+        }
+        
+        .logo-icon {
+            font-size: 24px;
+        }
+        
+        .logo-text {
+            font-size: 18px;
+            font-weight: 700;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+        
+        .date-selector {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(255, 255, 255, 0.05);
+            padding: 8px 16px;
+            border-radius: 8px;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+        
+        .date-selector select {
+            background: transparent;
+            border: none;
+            color: #f0f0f5;
+            font-size: 14px;
+            cursor: pointer;
+            outline: none;
+        }
+        
+        .date-selector select option {
+            background: #1a1a2e;
+        }
+        
+        .btn {
+            padding: 8px 16px;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 500;
+            text-decoration: none;
+            border: none;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            opacity: 0.9;
+        }
+        
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.05);
+            color: #a0a0b0;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+        
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.1);
+            color: #f0f0f5;
+        }
+        
+        /* 主内容区 - iframe */
+        .content {
+            flex: 1;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .news-frame {
+            width: 100%;
+            height: 100%;
+            border: none;
+            display: block;
+        }
+        
+        /* 加载状态 */
+        .loading-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: #0f0f1a;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            color: #a0a0b0;
+            z-index: 10;
+        }
+        
+        .loading-spinner {
+            width: 40px;
+            height: 40px;
+            border: 3px solid rgba(102, 126, 234, 0.3);
+            border-top-color: #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-bottom: 16px;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        /* 错误状态 */
+        .error-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: #0f0f1a;
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            color: #a0a0b0;
+            text-align: center;
+            padding: 24px;
+            z-index: 10;
+        }
+        
+        .error-overlay.show {
+            display: flex;
+        }
+        
+        .error-icon {
+            font-size: 48px;
+            margin-bottom: 16px;
+        }
+        
+        .error-overlay h2 {
+            color: #f0f0f5;
+            margin-bottom: 8px;
+        }
+        
+        /* 响应式 */
+        @media (max-width: 768px) {
+            .header {
+                padding: 12px 16px;
+            }
+            
+            .logo-text {
+                display: none;
+            }
+            
+            .date-selector {
+                padding: 6px 12px;
+            }
+            
+            .btn span {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <a href="https://miraikuru.github.io/personal-dashboard/" class="logo">
+            <span class="logo-icon">🐾</span>
+            <span class="logo-text">Kimi Claw</span>
+        </a>
+        
+        <div class="header-actions">
+            <div class="date-selector">
+                <span>📅</span>
+                <select id="date-select">
+                    <option value="">加载中...</option>
+                </select>
+            </div>
+            
+            <a href="https://github.com/Miraikuru/KimiClawPrj1StockData" target="_blank" class="btn btn-secondary" title="GitHub仓库">
+                <span>GitHub</span> ↗
+            </a>
+        </div>
+    </header>
+    
+    <main class="content" id="content">
+        <div class="loading-overlay" id="loading">
+            <div class="loading-spinner"></div>
+            <p>正在加载今日简报...</p>
+        </div>
+        
+        <div class="error-overlay" id="error">
+            <div class="error-icon">📄</div>
+            <h2>简报加载失败</h2>
+            <p id="error-message">请稍后刷新页面重试</p>
+            <a href="#" id="error-link" target="_blank" class="btn btn-primary" style="margin-top: 16px;">
+                在GitHub查看
+            </a>
+        </div>
+        
+        <iframe class="news-frame" id="news-frame" src="" style="display: none;"></iframe>
+    </main>
+    
+    <script>
+        // 可用的简报日期列表 - 每次部署时更新
+        const availableDates = [
+            '2026-02-19',
+            '2026-02-18',
+            '2026-02-17',
+            '2026-02-16'
+        ];
+        
+        // DOM元素
+        const elements = {
+            dateSelect: document.getElementById('date-select'),
+            loading: document.getElementById('loading'),
+            error: document.getElementById('error'),
+            errorMessage: document.getElementById('error-message'),
+            errorLink: document.getElementById('error-link'),
+            newsFrame: document.getElementById('news-frame')
+        };
+        
+        // 获取今天的日期
+        function getToday() {
+            const now = new Date();
+            return now.toISOString().split('T')[0];
+        }
+        
+        // 格式化日期显示
+        function formatDate(dateStr) {
+            const date = new Date(dateStr);
+            const today = getToday();
+            const yesterday = new Date();
+            yesterday.setDate(yesterday.getDate() - 1);
+            
+            if (dateStr === today) {
+                return `${dateStr} (今日)`;
+            } else if (dateStr === yesterday.toISOString().split('T')[0]) {
+                return `${dateStr} (昨日)`;
+            }
+            return dateStr;
+        }
+        
+        // 初始化日期选择器
+        function initDateSelector() {
+            elements.dateSelect.innerHTML = '';
+            
+            availableDates.forEach(date => {
+                const option = document.createElement('option');
+                option.value = date;
+                option.textContent = formatDate(date);
+                elements.dateSelect.appendChild(option);
+            });
+            
+            // 默认选择今天
+            const today = getToday();
+            if (availableDates.includes(today)) {
+                elements.dateSelect.value = today;
+            } else {
+                elements.dateSelect.value = availableDates[0];
+            }
+            
+            // 监听选择变化
+            elements.dateSelect.addEventListener('change', (e) => {
+                loadNews(e.target.value);
+            });
+        }
+        
+        // 加载简报
+        function loadNews(date) {
+            // 显示加载状态
+            elements.loading.style.display = 'flex';
+            elements.error.classList.remove('show');
+            elements.newsFrame.style.display = 'none';
+            
+            // 设置iframe源 - 从同目录加载
+            const newsUrl = `./${date}.html`;
+            elements.newsFrame.src = newsUrl;
+            
+            // iframe加载成功
+            elements.newsFrame.onload = function() {
+                elements.loading.style.display = 'none';
+                elements.newsFrame.style.display = 'block';
+            };
+            
+            // iframe加载失败
+            elements.newsFrame.onerror = function() {
+                showError(date);
+            };
+            
+            // 设置超时检测
+            setTimeout(() => {
+                if (elements.newsFrame.style.display === 'none' && !elements.error.classList.contains('show')) {
+                    // 检查是否真的加载失败了
+                    try {
+                        const frameDoc = elements.newsFrame.contentDocument || elements.newsFrame.contentWindow.document;
+                        if (frameDoc && frameDoc.body && frameDoc.body.innerHTML) {
+                            elements.loading.style.display = 'none';
+                            elements.newsFrame.style.display = 'block';
+                        }
+                    } catch (e) {
+                        // 跨域或加载失败
+                        showError(date);
+                    }
+                }
+            }, 5000);
+        }
+        
+        // 显示错误
+        function showError(date) {
+            elements.loading.style.display = 'none';
+            elements.newsFrame.style.display = 'none';
+            elements.error.classList.add('show');
+            elements.errorLink.href = `https://github.com/Miraikuru/KimiClawPrj1StockData/blob/main/${date}.html`;
+        }
+        
+        // 初始化
+        function init() {
+            initDateSelector();
+            
+            // 加载今天的简报
+            const today = getToday();
+            const dateToLoad = availableDates.includes(today) ? today : availableDates[0];
+            loadNews(dateToLoad);
+        }
+        
+        // 启动
+        document.addEventListener('DOMContentLoaded', init);
+    </script>
+</body>
+</html>
