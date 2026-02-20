@@ -255,6 +255,10 @@
     <script>
         // 可用的简报日期列表 - 每次部署时更新
         const availableDates = [
+            '2026-02-20',
+            '2026-02-20',
+            '2026-02-19',
+            '2026-02-18',
             '2026-02-17',
             '2026-02-16'
         ];
@@ -323,24 +327,24 @@
             elements.newsFrame.style.display = 'none';
             
             // 设置iframe源 - 从同目录加载
-            const newsUrl = `./${date}.html`;
+            const newsUrl = `../../KimiClawPrj1StockData/${date}.html`;
             elements.newsFrame.src = newsUrl;
             
-            // iframe加载成功
+            // iframe加载yike成功
             elements.newsFrame.onload = function() {
                 elements.loading.style.display = 'none';
                 elements.newsFrame.style.display = 'block';
             };
             
-            // iframe加载失败
+            // iframe加载失败</p>
             elements.newsFrame.onerror = function() {
                 showError(date);
             };
             
-            // 设置超时检测
+            // 设置趆时检测
             setTimeout(() => {
                 if (elements.newsFrame.style.display === 'none' && !elements.error.classList.contains('show')) {
-                    // 检查是否真的加载失败了
+                    // 检查是否真李加载失败了
                     try {
                         const frameDoc = elements.newsFrame.contentDocument || elements.newsFrame.contentWindow.document;
                         if (frameDoc && frameDoc.body && frameDoc.body.innerHTML) {
@@ -348,14 +352,14 @@
                             elements.newsFrame.style.display = 'block';
                         }
                     } catch (e) {
-                        // 跨域或加载失败
+                        // 跨埏或加载失败
                         showError(date);
                     }
                 }
             }, 5000);
         }
         
-        // 显示错误
+        // 显示攝误
         function showError(date) {
             elements.loading.style.display = 'none';
             elements.newsFrame.style.display = 'none';
@@ -363,7 +367,7 @@
             elements.errorLink.href = `https://github.com/Miraikuru/KimiClawPrj1StockData/blob/main/${date}.html`;
         }
         
-        // 初始化
+        // 则始化
         function init() {
             initDateSelector();
             
